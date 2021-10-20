@@ -1,0 +1,3 @@
+/Users/VanLadmon/OneDrive - Stanford/PHYSICS/Research/Patrick/ML/build/CMakeFiles/rebuild_cache.dir
+/Users/VanLadmon/OneDrive - Stanford/PHYSICS/Research/Patrick/ML/build/CMakeFiles/edit_cache.dir
+/Users/VanLadmon/OneDrive - Stanford/PHYSICS/Research/Patrick/ML/build/CMakeFiles/simulate.dir
