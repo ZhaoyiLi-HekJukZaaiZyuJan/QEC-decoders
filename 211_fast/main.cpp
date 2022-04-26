@@ -712,11 +712,9 @@ int loopDecoding(const int Lmin, const int Lmax, const int trials, const double 
 							test_cluster.addNoise(p, N, 0);
 						}
 						test_cluster.decode211(0);
-						test_cluster.getSuperChunks();
 						try {
 							test_cluster.getSuperChunks();
 						} catch (...) {
-							cout << "h " <<endl;
 							continue;
 						}
 						if (surf == PLANE && test_cluster.decodeWithMWPM(verbosity) == 1) {
