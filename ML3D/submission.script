@@ -1,0 +1,23 @@
+#!/bin/sh
+#SBATCH -o /scratch/users/ladmon/ML3D/results/%A_%a_terminal.out #STDOUT                 
+#SBATCH --ntasks=1  
+#SBATCH --time=24:00:00
+#SBATCH --cpus-per-task=2          
+#SBATCH --mail-type=END,FAIL    # Mail events (NONE, BEGIN, END, FAIL, ALL)
+#SBATCH --mail-user=ladmon@stanford.edu
+#SBATCH --array=1-100         # Array range
+
+
+mkdir /scratch/users/ladmon/${SLURM_ARRAY_JOB_ID}
+export LIBRARY_PATH=${LIBRARY_PATH}:~/libtensorflow2/lib:/moismon:/usr/lib64;\
+export LD_LIBRARY_PATH=$LD_LIBRARY_PATH:~/libtensorflow2/lib:/moismon:/usr/lib64 
+srun singularity exec ~/lolcow.sif bash -c "export LIBRARY_PATH=${LIBRARY_PATH}:~/libtensorflow2/lib:/moismon:/usr/lib64;\
+export LD_LIBRARY_PATH=$LD_LIBRARY_PATH:~/libtensorflow2/lib:/moismon:/usr/lib64;\
+./simulate -s TORUS --pmin 0 -N DEPOL1 --pmax 0.06 --Np 20 --Nq 1 -n 1000 --Lmin 3 --Lmax 17 -v 1 --fname '/scratch/users/ladmon/ML3D/results/${SLURM_ARRAY_JOB_ID}_${SLURM_ARRAY_TASK_ID}.out' -d /scratch/users/ladmon/ML3D/ --decode_with_NN -m 'depol1xymodel,L=5(7),layer=5x256,epochs=10000,p=' " 
+
+
+echo "----------------------------------"
+echo "id:" "$SLURM_ARRAY_JOB_ID" "$SLURM_ARRAY_TASK_ID"
+echo "cpu per task" "$SLURM_CPUS_PER_TASK"
+echo "nodelist" "$SLURM_JOB_NODELIST"
+echo "cluster name:" "$SLURM_CLUSTER_NAME"

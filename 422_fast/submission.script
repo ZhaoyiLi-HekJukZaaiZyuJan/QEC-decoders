@@ -1,0 +1,20 @@
+#!/bin/sh
+#SBATCH -o results/%A_%a_terminal.out #STDOUT  
+#SBATCH --time=48:00:00            
+#SBATCH --ntasks=1    
+#SBATCH --cpus-per-task=2           
+#SBATCH --mail-type=END,FAIL    # Mail events (NONE, BEGIN, END, FAIL, ALL)
+#SBATCH --mail-user=ladmon@stanford.edu
+#SBATCH --array=1-100           # Array range
+
+
+module load gcc/10.1.0
+srun ./simulate -s PLANE -N GATE --pmin 0 --pmax 0.008  --Np 20 --Npl 1 -n 1000 --Lmin 3 --Lmax 17 -v 1 --fname "results/${SLURM_ARRAY_JOB_ID}_$SLURM_ARRAY_TASK_ID.out"
+
+echo "----------------------------------"
+echo "id:" "$SLURM_ARRAY_JOB_ID"
+echo "cpu per task" "$SLURM_CPUS_PER_TASK"
+echo "nodelist" "$SLURM_JOB_NODELIST"
+echo "cluster name:" "$SLURM_CLUSTER_NAME"
+echo "node list:" "$SLURM_JOB_NODELIST"
+echo "node list:" "$SLURM_JOB_NODELIST"
