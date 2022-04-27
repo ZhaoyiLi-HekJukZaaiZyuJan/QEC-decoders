@@ -23,7 +23,7 @@ map<lossmodel, lossmodelfunc> LOSSMODELMAP {
 	{INDEP_loss, [](const double& p)->pair<double,double>{return {p,0};}}
 };
 
-enum noisemodel {INDEP, EM2, GATE};
+enum noisemodel {INDEP, EM2, GATE, INDEP_211};
 istream& operator>> (istream&, noisemodel&);
 //string to_string(noisemodel&);
 typedef function<pair<double, double>(double)> noisemodelfunc;

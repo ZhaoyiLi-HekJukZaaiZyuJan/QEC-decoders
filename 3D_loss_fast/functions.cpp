@@ -43,6 +43,7 @@ istream& operator>> (istream& is, noisemodel& N){
 	if (str == "INDEP") N = INDEP;
 	else if (str == "EM2") N = EM2;
 	else if (str == "GATE") N = GATE;
+	else if (str == "INDEP_211") N = INDEP_211;
 	else;
 	return is;
 }
@@ -50,6 +51,7 @@ string to_string(noisemodel& N){
 	if (N == INDEP) return "INDEP";
 	else if (N == EM2) return "EM2";
 	else if (N == GATE) return "GATE";
+	else if (N == INDEP_211) return "INDEP_211";
 	return "";
 }
 

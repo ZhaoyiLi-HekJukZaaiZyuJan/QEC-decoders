@@ -32,13 +32,14 @@ class cluster {
 	coord S;
 	surfacetype this_surf = PLANE;
 
-public:
+	public:
 	cluster(const coord&, const surfacetype&);
-	void addNoise(const double&, const noisemodel, const lossmodel, const int&);
-	void addGateNoise(const double&, const noisemodel, const int&);
+	void addNoise(const double&, const double&, const noisemodel, const lossmodel, const int&);
+	void addPauli(const double&, const double&, const int&);
+	void addGateNoise(const double&, const int&);
 	void print();
 	
-	void addLoss(const double&, const lossmodel, const int&);
+	void addLoss(const double&, const double&, const int&);
 	void getSuperChunks();
 	void printSuperChunks();
 	int findParent(int);
@@ -49,10 +50,10 @@ public:
 	void getXVec();
 	int decodeWithMWPM(int, int);
 	
-//	vector<int> surf;///decode
-//	void getSurf();///decode
-//	void printSurf();///decode
-//	void surfaceCorrect(PerfectMatching*, const int&, const vector<int>&, const vector<int>&, const int&);///decode
+	//	vector<int> surf;///decode
+	//	void getSurf();///decode
+	//	void printSurf();///decode
+	//	void surfaceCorrect(PerfectMatching*, const int&, const vector<int>&, const vector<int>&, const int&);///decode
 	
 	int checkMeasurementOutcomeX1();
 	int checkMeasurementOutcomeX2();
@@ -61,14 +62,16 @@ public:
 cluster::cluster(const coord& S, const surfacetype& this_surf){
 	this->S = S;
 	this->this_surf = this_surf;
-//	vector<int> surf(2*S.x*S.y*S.z,1);//decode
-//	this->surf = surf;//decode
+	//	vector<int> surf(2*S.x*S.y*S.z,1);//decode
+	//	this->surf = surf;//decode
 	vector<int> z_error_pos(3*S.x*S.y*S.z,1);
 	vector<int> loss_pos(3*S.x*S.y*S.z,1);
 	this->z_error_pos = z_error_pos;
 	this->loss_pos = loss_pos;
 }
-void cluster::addNoise(const double & p, const noisemodel N, const lossmodel Nl, const int& seed=0){
+
+
+void cluster::addPauli(const double & p1, const double & p2, const int& seed=0){
 	//Total heuristic Probabilities
 	//Initialization of error operator
 	fill(z_error_pos.begin(), z_error_pos.end(), 1);
@@ -82,7 +85,7 @@ void cluster::addNoise(const double & p, const noisemodel N, const lossmodel Nl,
 	
 	//Error Model 1: uncorrelated error distribution for all physical z_error_poss
 	for (int c = 0; c < 3*S.x*S.y*S.z; c++) {
-		if(dist(engine) < NOISEMODELMAP[N](p).first) {
+		if(dist(engine) < p1) {
 		z_error_pos[c] = -1;
 		} else {
 		z_error_pos[c] = 1;
@@ -96,7 +99,7 @@ void cluster::addNoise(const double & p, const noisemodel N, const lossmodel Nl,
 		}
 		for (int face = 0; face < 3; face ++) {
 			for (int dir = 0; dir < 2; dir ++) {
-				if (dist(engine) < NOISEMODELMAP[N](p).second) {
+				if (dist(engine) < p2) {
 					z_error_pos[C.getFaceQubits(S, face, dir, 3)] *= -1;
 					z_error_pos[C.getFaceQubits(S, face, dir, 2)] *= -1;
 				}
@@ -109,21 +112,9 @@ void cluster::addNoise(const double & p, const noisemodel N, const lossmodel Nl,
 			z_error_pos[c] = 1;
 		}//	for planar code, remove errors on left, more, and lower boundaries to create edges.
 	}
-	
-	if (Nl == toLoss) {
-		getx_vec();
-		for (int c = 0; c < S.x*S.y*S.z; c++){
-			if (x_vec[c] == -1) {
-				vertex Vertex(c, S);
-				for (int pos = 0; pos < 6; pos ++) {
-					loss_pos[Vertex.partial[pos]] = -1 ? 1 : -1;
-				}
-			}
-		}
-	}
 }
 
-void cluster::addLoss(const double & pl, const lossmodel Nl, const int& seed=0){
+void cluster::addLoss(const double & p1, const double & p2, const int& seed=0){
 	fill(loss_pos.begin(), loss_pos.end(), 1);
 	//Total heuristic Probabilities
 	random_device rd;
@@ -136,7 +127,7 @@ void cluster::addLoss(const double & pl, const lossmodel Nl, const int& seed=0){
 	//Initialization of error operator
 	//Error Model 1: uncorrelated error distribution for all physical z_error_poss
 	for (int c = 0; c < 3*S.x*S.y*S.z; c++) {
-		if(dist(engine) < LOSSMODELMAP[Nl](pl).first) {
+		if(dist(engine) < p1) {
 			loss_pos[c] = -1;
 		} else {
 			loss_pos[c] = 1;
@@ -150,7 +141,7 @@ void cluster::addLoss(const double & pl, const lossmodel Nl, const int& seed=0){
 	}
 }
 
-void cluster::addGateNoise(const double & p, const noisemodel N, const int& seed=0){
+void cluster::addGateNoise(const double & p, const int& seed=0){
 	fill(z_error_pos.begin(), z_error_pos.end(), 1);
 	//Total heuristic Probabilities
 	random_device rd;
@@ -169,7 +160,7 @@ void cluster::addGateNoise(const double & p, const noisemodel N, const int& seed
 				z_error_pos[c] *= -1;
 			}
 		}
-		for (int i = 0; i < 3; i++) {
+		for (int i = 0; i < 2; i++) {
 			if(dist(engine) < p*2/3) {
 				z_error_pos[c] *= -1;
 			}
@@ -203,6 +194,35 @@ void cluster::addGateNoise(const double & p, const noisemodel N, const int& seed
 	}
 }
 
+//No seed used for seed = 0
+void cluster::addNoise(const double & p, const double & q, const noisemodel N, const lossmodel Nl, const int& seed=0){
+	// Pauli part
+	if (N == GATE) {
+		addGateNoise(p, seed);
+	} else if (N == INDEP_211) {
+		addPauli(p*p,0, seed);
+
+	} else {
+		addPauli(NOISEMODELMAP[N](p).first, NOISEMODELMAP[N](p).second, seed);
+	} 
+
+	// Loss part
+	if (Nl == toLoss) { //convert measured syndrom to loss errors
+		getx_vec();
+		for (int c = 0; c < S.x*S.y*S.z; c++){
+			if (x_vec[c] == -1) {
+				vertex Vertex(c, S);
+				for (int pos = 0; pos < 6; pos ++) {
+					loss_pos[Vertex.partial[pos]] = -1 ? 1 : -1;
+				}
+			}
+		}
+	} else if (N == INDEP_211) {
+		addLoss(2*p*(1-p),0, seed);
+	} else {
+		addLoss(LOSSMODELMAP[Nl](q).first, LOSSMODELMAP[Nl](q).second, seed);
+	}
+}
 
 int cluster::getLeftDistance(const coord& S, const vector<int>& chunk){
 	int min_dist = INT_MAX;
@@ -218,7 +238,7 @@ int cluster::getLeftDistance(const coord& S, const vector<int>& chunk){
 }
 
 int cluster::getRightDistance(const coord& S, const vector<int>& chunk){
-int min_dist = INT_MAX;
+	int min_dist = INT_MAX;
 	for (int i = 0; i < chunk.size(); i++) {
 		int dist = S.x-coord(chunk[i],S).x;
 		min_dist = (dist < min_dist) ? dist : min_dist;
@@ -315,37 +335,37 @@ void cluster::getx_vec(){
 }
 
 //void cluster::getSurf(){//decode
-//	for (int i =0; i < S.x; i++) {
-//		for (int j =0; j < S.y; j++) {
-//			for (int l=0; l < 2; l++) {
-//				int bit = 1;
-//				for (int k =0; k < S.z; k++) {
-//					bit *= z_error_pos[coord(i, j, k, l).hash(S)];
-//				}
-//				surf[coord(i, j, 0, l).hash(S)] = bit;
-//			}
-//		}
-//	}
-//	cout << "here" <<endl;
+	//	for (int i =0; i < S.x; i++) {
+	//		for (int j =0; j < S.y; j++) {
+	//			for (int l=0; l < 2; l++) {
+	//				int bit = 1;
+	//				for (int k =0; k < S.z; k++) {
+	//					bit *= z_error_pos[coord(i, j, k, l).hash(S)];
+	//				}
+	//				surf[coord(i, j, 0, l).hash(S)] = bit;
+	//			}
+	//		}
+	//	}
+	//	cout << "here" <<endl;
 //}
-//
+
 //void cluster::printSurf(){//decode
-//	vector<vector<string>> print_out;
-//	for(int i = 0; i < 2*S.x; i++){
-//		vector<string> a_line;
-//		for(int j = 0; j < 2*S.y; j++){
-//			a_line.push_back(" ");
-//		}
-//		print_out.push_back(a_line);
-//	}
-//	for (int x = 0; x < S.x; x++) {
-//		for (int y = 0; y < S.y; y++) {
-//			print_out[2 * y][2 * x + 1] = to_string(surf[coord(x, y, 0, 0).hash(S)])[0];
-//			print_out[2 * y +1][2 * x] = to_string(surf[coord(x, y, 0, 1).hash(S)])[0];
-//		}
-//	}
-//	cout << "surface:" << endl;
-//	printMatrix(print_out);
+	//	vector<vector<string>> print_out;
+	//	for(int i = 0; i < 2*S.x; i++){
+	//		vector<string> a_line;
+	//		for(int j = 0; j < 2*S.y; j++){
+	//			a_line.push_back(" ");
+	//		}
+	//		print_out.push_back(a_line);
+	//	}
+	//	for (int x = 0; x < S.x; x++) {
+	//		for (int y = 0; y < S.y; y++) {
+	//			print_out[2 * y][2 * x + 1] = to_string(surf[coord(x, y, 0, 0).hash(S)])[0];
+	//			print_out[2 * y +1][2 * x] = to_string(surf[coord(x, y, 0, 1).hash(S)])[0];
+	//		}
+	//	}
+	//	cout << "surface:" << endl;
+	//	printMatrix(print_out);
 //}
 
 void cluster::print(){
@@ -418,73 +438,74 @@ void cluster::printSuperChunks(){
 }
 
 //void cluster::surfaceCorrect(PerfectMatching* pm, const int& vertices_num, const vector<int>& wrong_chunks, const vector<int>& boundary_info, const int& verbose = 0){
-//	//Find the error operator of each pair.
-//	vector<int> error_op_Z_pos; //correction operator not reduced
-//	vector<int> matchPosition; //matching vertex of wrong_chunks respectively
-//	for (int i = 0; i < vertices_num; i++) {
-//		int ac = super_chunks[wrong_chunks[i]][0];
-//		coord relative_pos; // relative position between two vertices in a pair
-//		//get relative position (vector) of pair to determine the path in between.
-//		vertex aVertex(ac, S), bVertex;
-//		if (pm->GetMatch(i) < vertices_num){
-//			int bc = super_chunks[wrong_chunks[pm->GetMatch(i)]][0];// position of vertexa's match, vertexb
-//			matchPosition.push_back(bc);
-//			if (count(matchPosition.begin(), matchPosition.end(), ac)) continue; //Prevent recounting of vertices
-//			bVertex = vertex(bc, S);
-//			relative_pos = getTaxicabDisplacement(S, ac, bc);
-//		}else{ // matched to boundary
-//			matchPosition.push_back(0);
-//			int x =  coord(aVertex.c,S).x;
-//			if (x <= S.x-x) {
-//				relative_pos = {-x, 0, 0, 0};
-//			} else {
-//				relative_pos = {S.x-x, 0, 0, 0};
-//			}
-//		}
-//		int n;
-//		if (relative_pos.x > 0) {//a to the left of b
-//			n = aVertex.partial[1];//use right z_error_pos
-//			for(int i =0; i < abs(relative_pos.x); i++){
-//				error_op_Z_pos.push_back(coord(divmod(coord(n,S).x + i, S.x), coord(n,S).y, 0, 0).hash(S));
-//			}
-//		} else if(relative_pos.x < 0) {//a to the right of b
-//			n = aVertex.partial[0];//use left z_error_pos
-//			for(int i =0; i < abs(relative_pos.x); i++){
-//				error_op_Z_pos.push_back(coord(divmod(coord(n,S).x - i, S.x), coord(n,S).y, 0, 0).hash(S));
-//			}
-//		}
-//		if (relative_pos.y > 0) {//a above b
-//			n = bVertex.partial[2];//use upper z_error_pos
-//			for(int i =0; i < abs(relative_pos.y); i++){
-//				error_op_Z_pos.push_back(coord(coord(n,S).x, divmod(coord(n,S).y - i, S.y), 0, 1).hash(S));
-//			}
-//		} else if (relative_pos.y < 0) {//a below b
-//			n = bVertex.partial[3];//use lower
-//			for(int i =0; i < abs(relative_pos.y); i++){
-//				error_op_Z_pos.push_back(coord(coord(n,S).x, divmod(coord(n,S).y + i, S.y), 0, 1).hash(S));
-//			}
-//		}
-//
-//	}
-//
-//	for (int i = 0; i < error_op_Z_pos.size(); i++) {
-//		surf[error_op_Z_pos[i]] *= -1; //act local Z operator
-//	}
-//	if(verbose == 2){
-//		cout << "vertex/match/bn_info/: "<< endl;
-//		//printout test
-//		for (int i = 0 ; i < vertices_num; i++) {
-//			cout << coord(super_chunks[wrong_chunks[i]][0],S)<< "/";
-//			cout << coord(matchPosition[i],S)<<"/";
-//			cout << boundary_info[i] <<"/";
-//			cout << getTaxicabDistance(S,super_chunks[wrong_chunks[i]][0],matchPosition[i]) << endl;
-//		}
-//		cout << "errorOps: " << endl;
-//		for (int i = 0 ; i <error_op_Z_pos.size(); i++) {
-//			cout << coord(error_op_Z_pos[i],S) << " ";
-//		}
-//		cout << endl;
-//	}
+
+	//	//Find the error operator of each pair.
+	//	vector<int> error_op_Z_pos; //correction operator not reduced
+	//	vector<int> matchPosition; //matching vertex of wrong_chunks respectively
+	//	for (int i = 0; i < vertices_num; i++) {
+	//		int ac = super_chunks[wrong_chunks[i]][0];
+	//		coord relative_pos; // relative position between two vertices in a pair
+	//		//get relative position (vector) of pair to determine the path in between.
+	//		vertex aVertex(ac, S), bVertex;
+	//		if (pm->GetMatch(i) < vertices_num){
+	//			int bc = super_chunks[wrong_chunks[pm->GetMatch(i)]][0];// position of vertexa's match, vertexb
+	//			matchPosition.push_back(bc);
+	//			if (count(matchPosition.begin(), matchPosition.end(), ac)) continue; //Prevent recounting of vertices
+	//			bVertex = vertex(bc, S);
+	//			relative_pos = getTaxicabDisplacement(S, ac, bc);
+	//		}else{ // matched to boundary
+	//			matchPosition.push_back(0);
+	//			int x =  coord(aVertex.c,S).x;
+	//			if (x <= S.x-x) {
+	//				relative_pos = {-x, 0, 0, 0};
+	//			} else {
+	//				relative_pos = {S.x-x, 0, 0, 0};
+	//			}
+	//		}
+	//		int n;
+	//		if (relative_pos.x > 0) {//a to the left of b
+	//			n = aVertex.partial[1];//use right z_error_pos
+	//			for(int i =0; i < abs(relative_pos.x); i++){
+	//				error_op_Z_pos.push_back(coord(divmod(coord(n,S).x + i, S.x), coord(n,S).y, 0, 0).hash(S));
+	//			}
+	//		} else if(relative_pos.x < 0) {//a to the right of b
+	//			n = aVertex.partial[0];//use left z_error_pos
+	//			for(int i =0; i < abs(relative_pos.x); i++){
+	//				error_op_Z_pos.push_back(coord(divmod(coord(n,S).x - i, S.x), coord(n,S).y, 0, 0).hash(S));
+	//			}
+	//		}
+	//		if (relative_pos.y > 0) {//a above b
+	//			n = bVertex.partial[2];//use upper z_error_pos
+	//			for(int i =0; i < abs(relative_pos.y); i++){
+	//				error_op_Z_pos.push_back(coord(coord(n,S).x, divmod(coord(n,S).y - i, S.y), 0, 1).hash(S));
+	//			}
+	//		} else if (relative_pos.y < 0) {//a below b
+	//			n = bVertex.partial[3];//use lower
+	//			for(int i =0; i < abs(relative_pos.y); i++){
+	//				error_op_Z_pos.push_back(coord(coord(n,S).x, divmod(coord(n,S).y + i, S.y), 0, 1).hash(S));
+	//			}
+	//		}
+	//
+	//	}
+	//
+	//	for (int i = 0; i < error_op_Z_pos.size(); i++) {
+	//		surf[error_op_Z_pos[i]] *= -1; //act local Z operator
+	//	}
+	//	if(verbose == 2){
+	//		cout << "vertex/match/bn_info/: "<< endl;
+	//		//printout test
+	//		for (int i = 0 ; i < vertices_num; i++) {
+	//			cout << coord(super_chunks[wrong_chunks[i]][0],S)<< "/";
+	//			cout << coord(matchPosition[i],S)<<"/";
+	//			cout << boundary_info[i] <<"/";
+	//			cout << getTaxicabDistance(S,super_chunks[wrong_chunks[i]][0],matchPosition[i]) << endl;
+	//		}
+	//		cout << "errorOps: " << endl;
+	//		for (int i = 0 ; i <error_op_Z_pos.size(); i++) {
+	//			cout << coord(error_op_Z_pos[i],S) << " ";
+	//		}
+	//		cout << endl;
+	//	}
 //}
 
 int cluster::decodeWithMWPM(int verbose = 0, int test = 0){
@@ -507,7 +528,7 @@ int cluster::decodeWithMWPM(int verbose = 0, int test = 0){
     }
 	
 	
-//	cout << wrong_chunks <<endl; /// debug
+	//	cout << wrong_chunks <<endl; /// debug
  	int vertices_num = wrong_chunks.size(), matches_num, edges_num;
 	
 	matches_num = 2 * vertices_num;
@@ -522,7 +543,7 @@ int cluster::decodeWithMWPM(int verbose = 0, int test = 0){
 		int dr = getRightDistance(S, super_chunks[wrong_chunks[i]]);
 		int dmin1 = dl <= dr ? dl : dr;
 		boundary_info[wrong_chunks[i]] = dl <= dr ? -1 : 1;
-//		cout << wrong_chunks[i] << ":b:" << dmin1 << endl; /// debug
+	//		cout << wrong_chunks[i] << ":b:" << dmin1 << endl; /// debug
 		pm->AddEdge(i, i + vertices_num, dmin1);
 		//add vertex-vertex; boundary-boundary connections;
 		for (int j = i + 1; j < vertices_num; j++) {// add in interconnections
@@ -530,7 +551,7 @@ int cluster::decodeWithMWPM(int verbose = 0, int test = 0){
 			int dr = getRightDistance(S, super_chunks[wrong_chunks[j]]);
 			int dmin2 = dl <= dr ? dl : dr;
 			int dist = getTaxicabDistance(S, super_chunks[wrong_chunks[i]], super_chunks[wrong_chunks[j]]);
-//			cout << wrong_chunks[i] << ":" << wrong_chunks[j]  << dist << endl; /// debug
+	//			cout << wrong_chunks[i] << ":" << wrong_chunks[j]  << dist << endl; /// debug
 			if (dist < dmin1 + dmin2) {//optimization
 				pm->AddEdge(i,j,dist);
 				pm->AddEdge(i + vertices_num, j + vertices_num, 0);//boundary interconnection
@@ -542,8 +563,8 @@ int cluster::decodeWithMWPM(int verbose = 0, int test = 0){
 	//solve the graph using MWPM decoder
 	pm->Solve();
 
-//	//surface correction
-//	surfaceCorrect(pm, vertices_num, wrong_chunks, boundary_info, verbose);
+	//	//surface correction
+	//	surfaceCorrect(pm, vertices_num, wrong_chunks, boundary_info, verbose);
 	
 	int parity = 1;
 	for (int i = 0; i < vertices_num; i++) {
@@ -570,13 +591,7 @@ void testDecoding(cluster& test_cluster, const double& p, const double& pl, cons
 	
 	start_t = clock();
 	//add noise
-	if (N == GATE) {
-		test_cluster.addGateNoise(p, N, seed);
-	} else {
-		test_cluster.addNoise(p, N, Nl, seed);
-	}
-	//add loss
-	test_cluster.addLoss(pl, Nl, seed);
+	test_cluster.addNoise(p, pl, N, Nl, seed);
 	cout << "t(Generation):"<< double(clock()-start_t)/CLOCKS_PER_SEC << endl;//timing
 	start_t = clock();
 	try {
@@ -589,8 +604,8 @@ void testDecoding(cluster& test_cluster, const double& p, const double& pl, cons
 	if (verbose >= 1){
 		if (verbose == 2) {
 			test_cluster.printSuperChunks();
-//			test_cluster.getSurf();//decode
-//			test_cluster.printSurf();//decode
+	//			test_cluster.getSurf();//decode
+	//			test_cluster.printSurf();//decode
 		}
 		cout << "t(getSuperChunks):" << double(clock()-start_t)/CLOCKS_PER_SEC << endl;//timing
 		start_t = clock();
@@ -600,7 +615,7 @@ void testDecoding(cluster& test_cluster, const double& p, const double& pl, cons
 	if (verbose >= 1){
 		if (verbose == 2) {
 			test_cluster.print();
-//			test_cluster.printSurf();//decode
+	//			test_cluster.printSurf();//decode
 		}
 		cout << "t(decodeWithMWPM):"<< double(clock()-start_t)/CLOCKS_PER_SEC << endl;//timing
 		start_t = clock();
@@ -635,12 +650,7 @@ int loopDecoding(const int L_min, const int L_max, const int trials, const doubl
 					parallel_for(trials, [&](int start, int end){
 						cluster test_cluster({L,L,L,0}, surf);
 						for(int i = start; i < end; ++i){
-							if (N == GATE) {
-								test_cluster.addGateNoise(p, N);
-							} else {
-								test_cluster.addNoise(p, N, Nl);
-							}
-							test_cluster.addLoss(pl, Nl);
+							test_cluster.addNoise(p, pl, N, Nl);	
 							try {
 								test_cluster.getSuperChunks();
 							} catch (...) {
@@ -653,12 +663,7 @@ int loopDecoding(const int L_min, const int L_max, const int trials, const doubl
 					}, use_env);
 				} else {
 					for(int i = 0; i < trials; ++i){
-						if (N == GATE) {
-							test_cluster.addGateNoise(p, N);
-						} else {
-							test_cluster.addNoise(p, N, Nl);
-						}
-						test_cluster.addLoss(pl, Nl);
+						test_cluster.addNoise(p, pl, N, Nl);
 						try {
 							test_cluster.getSuperChunks();
 						} catch (...) {
@@ -756,16 +761,23 @@ int main(int argc, const char *argv[]) {
 		loopDecoding(L_min, L_max, n, P_min, P_max,  Np-1, Pl_min, Pl_max, Npl-1, fname, s, N, Nl, verbose, thread, use_env);
 	}
 }
-///./simulate -s PLANE --plmin 0.05 --plmax 0.05 --pmin 0.004 --pmax 0.008  --Np 10 --Npl 1 -n 500 --Lmin 3 -v 1
-//big test
-///2D
+
+///######## big 2D run########
+
 ///./simulate -s PLANE --plmin 0 --plmax 0.25 --pmin 0 --pmax 0.008  --Np 20 --Npl 20 -n 1000 --Lmin 3 -v 1 #big loss test EM2
 ///./simulate -s PLANE --plmin 0 --plmax 0.25 --pmin 0 --pmax 0.03  --Np 20 --Npl 20 -n 100 --Lmin 3 -v 1 -N INDEP  #big loss test INDEP
 ///./simulate -s PLANE --pmin 0 --pmax 0.012 --plmin 0 --plmax 0 --Np 10 --Npl 1  -n 1000 --Lmin 3 -v 1 -N GATE --Nl toLoss #pauli error only
 ///
-///1D
-///./simulate -s PLANE --plmin 0 --plmax 0 --pmin 0 --pmax 0.008  --Np 20 --Npl 1 -n 1000 --Lmin 3 -v 1 -N GATE #big loss test EM2
-///
+
+///######## 1D run ########
+//### 211 run: (*p_th = 0.08*)
+//./simulate -s PLANE --plmin 0 --plmax 0 --pmin 0.05 --pmax 0.1  --Np 20 --Npl 1 -n 1000 --Lmin 3 -v 1 -N INDEP_211
+
+//### Loss EM2 run:
+///./simulate -s PLANE --plmin 0 --plmax 0 --pmin 0 --pmax 0.008  --Np 20 --Npl 1 -n 1000 --Lmin 3 -v 1 -N GATE 
+///./simulate -s PLANE --plmin 0 --plmax 0.3 --pmin 0 --pmax 0  --Np 1 --Npl 20 -n 1000 --Lmin 3 --Lmax 7 -v 1 -N INDEP --Nl toLoss
+
+///######## tests ########
 //timing test
 ///./simulate -s PLANE --plmin 0.05 --plmax 0.05 --pmin 0.004 --pmax 0.008  --Np 10 --Npl 1 -n 500 --Lmin 3 -v 1
 
