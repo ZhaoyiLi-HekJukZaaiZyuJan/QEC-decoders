@@ -4,10 +4,10 @@
 //===================================================================//
 
 # include "functions.cpp"
-# include "libs/cxxopts/cxxopts.hpp"
+# include "../src/libs/cxxopts/cxxopts.hpp"
 # include <assert.h>
-# include "libs/blossom5-v2.05.src/PerfectMatching.h"
-# include "libs/blossom5-v2.05.src/GEOM/GeomPerfectMatching.h"
+# include "../src/libs/blossom5-v2.05.src/PerfectMatching.h"
+# include "../src/libs/blossom5-v2.05.src/GEOM/GeomPerfectMatching.h"
 # include "cppflow/ops.h"
 # include "cppflow/model.h"
 

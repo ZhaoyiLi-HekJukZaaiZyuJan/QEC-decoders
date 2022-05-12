@@ -13,154 +13,6 @@ namespace fs = filesystem;
 
 static int window_size = 5;
 
-//===================================================================//
-
-int divmod (int, int); //modular division
-
-struct subcluster::subvertex_x {
-	subvertex_x(){}
-	subvertex_x(const int& hash){
-		int L = S.x;
-		int M = S.y;
-		x = hash % L; //x subcoordinate
-		y = hash / L; //y subcoordinate
-		physical_qubits = {y*L+divmod(x-1,M), hash, M*L+divmod(y-1,L)*L+x, M*L+hash};
-		//each subvertex_x contains 4 physical_qubits, left (Mx-), right (Mx+), up, down
-	}
-	int x;
-	int y;
-	vector<int> physical_qubits;
-};
-
-struct subcluster::subvertex_z {//writing here
-	subvertex_z(){}
-	subvertex_z(const int& hash){
-		int L = S.x;
-		int M = S.y;
-		x = hash % L; //x subcoordinate
-		y = hash / L; //y subcoordinate
-		physical_qubits = {M*L+hash, M*L+y*L+divmod(x+1,M), hash, divmod(y+1,L)*L+x};
-		//each subvertex_x contains 4 physical_qubits, left (Mx-), right (Mx+), up, down
-	}
-	int x;
-	int y;
-	vector<int> physical_qubits;
-};
-
-//===================================================================//
-subcluster::subcoord subcluster::S = subcoord(0,0,0); //global variable
-
-subcluster::subcoord::subcoord(const int& x, const int& y, const int& l){
-	this->x = x;
-	this->y = y;
-	this->l = l;
-}
-
-subcluster::subcoord::subcoord(const int& c){
-	int L = S.x;
-	int M = S.y;
-	*this = {c % (M*L) % L, c % (M*L) / L, c / (M*L)};
-}
-
-subcluster::subcoord::subcoord(const int& c, const int& window_size){
-	int L = window_size;
-	int M = window_size;
-	*this = {c % (M*L) % L, c % (M*L) / L, c / (M*L)};
-}
-
-
-int subcluster::subcoord::hash(){
-	int L = S.x;
-	int M = S.y;
-	return l*L*M + y*L + x;
-}
-
-void subcluster::subcoord::operator=(const subcluster::subcoord& c) {
-	x = c.x;
-	y = c.y;
-	l = c.l;
-}
-
-
-//print subcoord
-ostream& operator<<(ostream& os, const subcluster::subcoord& c) {
-	os << "(" << c.x << "," << c.y << "," << c.l << ")";
-	return os;
-}
-
-//coord comparison
-bool operator<(const subcluster::subcoord& c1, const subcluster::subcoord& c2) {
-	if (c1.x < c2.x) {
-		return true;
-	} else if (c1.x > c2.x) {
-		return false;
-	} else {
-		if (c1.y < c2.y){
-			return true;
-		} else {
-			return false;
-		}
-	}
-}
-
-bool operator==(const subcluster::subcoord& c1, const subcluster::subcoord& c2) {
-	if (c1.x == c2.x && c1.y == c2.y && c1.l == c2.l) return true;
-	else return false;
-}
-
-
-//===================================================================//
-
-int getTaxicabDistance(const subcluster::subcoord& S, const int& c1, const int& c2, const subsurfacetype& surf){  // compute taxicab distance between two cubes, given their cube numbers
-	int L = S.x, M = S.y, x1 = subcluster::subcoord(c1).x, x2 = subcluster::subcoord(c2).x, y1 = subcluster::subcoord(c1).y, y2 = subcluster::subcoord(c2).y;
-	
-	if (surf == TORUS) {
-		return min(abs(x1 - x2), M-abs(x1 - x2)) + min(abs(y1 - y2), L-abs(y1 - y2));
-	} else if (surf == PLANE){
-		return abs(x1 - x2) + abs(y1 - y2);
-	} else{
-		return 0;
-	}
-}
-
-subcluster::subcoord getTaxicabDisplacement(const int& c1, const int& c2, const subsurfacetype& surf){  // compute taxicab distance between two points with given coordinates
-	int L = subcluster::S.x, M = subcluster::S.y, x1 = subcluster::subcoord(c1).x, x2 = subcluster::subcoord(c2).x, y1 = subcluster::subcoord(c1).y, y2 = subcluster::subcoord(c2).y;
-	
-	if (surf == TORUS) {
-		int x_dist, y_dist, x_relative_pos, y_relative_pos;
-		x_dist = min(M-abs(x1 - x2), abs(x1 - x2));
-		y_dist = min(L-abs(y1 - y2), abs(y1 - y2));
-		
-		//replace this part with displacement function
-		if (x_dist == 0) { //two vertices on same x
-			x_relative_pos = 0;
-			
-		} else if ((x_dist == abs(x1 - x2) && x1 < x2) ||
-				   (x_dist == M - abs(x1 - x2) && x1 > x2)){
-			x_relative_pos = 1;
-		} else {
-			x_relative_pos = -1;
-		}
-		
-		if (y_dist == 0) { //two vertices on same y
-			y_relative_pos = 0;
-		} else if ((y_dist == abs(y1 - y2) && y1 < y2) ||
-				   (y_dist == L - abs(y1 - y2) && y1 > y2)){
-			y_relative_pos = 1;
-			
-		} else {
-			y_relative_pos = -1;
-		}
-		return {x_relative_pos * x_dist, y_relative_pos * y_dist,0};
-		
-	} else if (surf == PLANE){
-		return {x2 - x1, y2 - y1, 0};
-	} else{
-		return {0,0,0};
-	}
-}
-
-
 subcluster::subcluster(const subcluster::subcoord& S, const subsurfacetype& this_surf){
 	this->S = S;
 	this->this_surf = this_surf;
@@ -470,8 +322,6 @@ void subcluster::Predecode(bool binary_output, int verbose = 0){
 		if (stabs[c]<0||stabs[cV1]<0||stabs[cV2]<0||stabs[cV3]<0) {
 			vector<float> window = getWindow(C);
 			
-			auto input = cppflow::tensor(window, {1,window_size*window_size*2});
-			auto output = model(input);
 			// debug
 			// cout << endl;
 			// cout << C << endl;
@@ -527,7 +377,7 @@ void subcluster::Predecode(bool binary_output, int verbose = 0){
 }
 
 //direction : 0-z error 1-x error
-vector<int> subcluster::decodeWithMWPM(int verbose = 0, bool dir = 0, bool make_corrections = 0){
+vector<int> subcluster::decodeWithMWPMLoss(int verbose = 0, bool dir = 0, bool make_corrections = 0){
 	//PAIR MATCHING
 	
 	vector<int> vertexPosition;//actual (non boundary) vertices to be matched
@@ -769,10 +619,10 @@ void testDecoding(cppflow::model model, const int L, const int M, const double p
 	testcluster.getz_measurements();
 	testcluster.printQubit();
 	
-	if (surf == PLANE && testcluster.decodeWithMWPM(1,dir,make_corrections)[0] == 1) {
+	if (surf == PLANE && testcluster.decodeWithMWPMLoss(1,dir,make_corrections)[0] == 1) {
 		cout << "success" << endl; //correction successful
 	} else if (surf == TORUS) {
-		vector<int> parity = testcluster.decodeWithMWPM(1,dir,make_corrections);
+		vector<int> parity = testcluster.decodeWithMWPMLoss(1,dir,make_corrections);
 		if (parity[0] == 1 && parity[1] == 1) {
 			cout << "success" << endl;
 		} else {
@@ -826,10 +676,10 @@ void loopDecoding(string directory, string model_name, const int L_min, const in
 							testcluster.getx_measurements();
 							testcluster.getz_measurements();
 							
-							if (surf == PLANE && testcluster.decodeWithMWPM(verbose, dir, 0)[0] == 1) {
+							if (surf == PLANE && testcluster.decodeWithMWPMLoss(verbose, dir, 0)[0] == 1) {
 								num_add++; //correction successful
 							} else{
-								vector<int> parity = testcluster.decodeWithMWPM(verbose, dir, 1);
+								vector<int> parity = testcluster.decodeWithMWPMLoss(verbose, dir, 1);
 								if (parity[0]==1&&parity[1]==1) {
 									num_add++;
 								}
@@ -847,10 +697,10 @@ void loopDecoding(string directory, string model_name, const int L_min, const in
 						testcluster.getx_measurements();
 						testcluster.getz_measurements();
 						
-						if (surf == PLANE && testcluster.decodeWithMWPM(verbose, dir)[0] == 1) {
+						if (surf == PLANE && testcluster.decodeWithMWPMLoss(verbose, dir)[0] == 1) {
 							num_correct ++; //correction successful
 						} else{
-								vector<int> parity = testcluster.decodeWithMWPM(verbose, dir, 1);
+								vector<int> parity = testcluster.decodeWithMWPMLoss(verbose, dir, 1);
 								if (parity[0]==1&&parity[1]==1) {
 									num_correct++;
 								}
@@ -867,10 +717,10 @@ void loopDecoding(string directory, string model_name, const int L_min, const in
 							testcluster.getx_measurements();
 							testcluster.getz_measurements();
 							
-							if (surf == PLANE && testcluster.decodeWithMWPM(verbose,dir, 0)[0] == 1) {
+							if (surf == PLANE && testcluster.decodeWithMWPMLoss(verbose,dir, 0)[0] == 1) {
 								num_add++; //correction successful
 							} else{
-								vector<int> parity = testcluster.decodeWithMWPM(verbose, dir, 1);
+								vector<int> parity = testcluster.decodeWithMWPMLoss(verbose, dir, 1);
 								if (parity[0]==1&&parity[1]==1) {
 									num_add++;
 								}
@@ -884,10 +734,10 @@ void loopDecoding(string directory, string model_name, const int L_min, const in
 						testcluster.getx_measurements();
 						testcluster.getz_measurements();
 						
-						if (surf == PLANE && testcluster.decodeWithMWPM(verbose, dir)[0] == 1) {
+						if (surf == PLANE && testcluster.decodeWithMWPMLoss(verbose, dir)[0] == 1) {
 							num_correct ++; //correction successful
 						} else{
-								vector<int> parity = testcluster.decodeWithMWPM(verbose, dir, 1);
+								vector<int> parity = testcluster.decodeWithMWPMLoss(verbose, dir, 1);
 								if (parity[0]==1&&parity[1]==1) {
 									num_correct++;
 								}

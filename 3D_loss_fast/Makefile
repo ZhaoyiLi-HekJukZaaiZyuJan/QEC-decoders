@@ -1,21 +1,26 @@
-DEPS=blossom *.cpp
+rwildcard=$(foreach d,$(wildcard $(1:=/*)),$(call rwildcard,$d,$2) $(filter $(subst *,%,$2),$d))
 
-all: blossom simulate
-# g++  libs/blossom5-v2.05.src/MinCost/*.o libs/blossom5-v2.05.src/GEOM/*.o libs/blossom5-v2.05.src/*.o -o cubic cubic.cpp
+DIRS := . ../src
+SOURCES := $(foreach dir, $(DIRS), $(wildcard $(dir)/*.cpp))
+BLOSSOM_OBJECTS:= $(call rwildcard, ../src/libs/blossom5-v2.05.src,*.o)
+OBJS := $(patsubst %.cpp, %.o, $(SOURCES))
 
+CFLAGS := -std=c++17 -lpthread -no-pie -fmax-errors=5 -O3 -I ../src \
+		-I ../src/libs/ \
+		-I ../src/libs/blossom5-v2.05.src
+CXX ?= g++
+INCLUDES :=
+LIBDIR :=
 
-blossom:
-	cd libs/blossom5-v2.05.src/ && module load gcc/10.1.0 || true && make
+all: simulate
 
+simulate: ${OBJS}
+	$(CXX) $(CFLAGS) ${BLOSSOM_OBJECTS} -o $@ ${OBJS} ${LIBS}
 
-simulate: $(DEPS)
-	module load gcc/10.1.0 || true && \
-		g++ -std=c++11 -pthread -I libs/cxxopts/ -I libs/blossom5-v2.05.src/ \
-		libs/blossom5-v2.05.src/PMduals.o libs/blossom5-v2.05.src/PMexpand.o  \
-		libs/blossom5-v2.05.src/PMinit.o libs/blossom5-v2.05.src/PMinterface.o \
-		libs/blossom5-v2.05.src/PMmain.o libs/blossom5-v2.05.src/PMrepair.o \
-		libs/blossom5-v2.05.src/PMshrink.o libs/blossom5-v2.05.src/misc.o \
-		libs/blossom5-v2.05.src/MinCost/MinCost.o libs/blossom5-v2.05.src/GEOM/GPMinit.o \
-		libs/blossom5-v2.05.src/GEOM/GPMinterface.o libs/blossom5-v2.05.src/GEOM/GPMkdtree.o \
-		libs/blossom5-v2.05.src/GEOM/GPMmain.o -O3 \
-		main.cpp -o simulate
+.cpp.o:
+	$(CXX) $(CFLAGS) ${INCLUDES} $< -c -o $@ | echo $<
+
+clean:
+	rm -f ${OBJS} simulate
+
+		
