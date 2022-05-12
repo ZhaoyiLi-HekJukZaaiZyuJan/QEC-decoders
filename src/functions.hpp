@@ -27,7 +27,7 @@ ostream& operator<< (ostream&, lossmodel&);
 
 typedef function<pair<double, double>(double,double)> lossmodelfunc;
 
-extern map<lossmodel, lossmodelfunc> LOSSMODELMAP;
+extern std::map<lossmodel, lossmodelfunc> LOSSMODELMAP;
 
 //===================================================================//
 //INDEP: p1 = p, p2 = q
@@ -36,14 +36,15 @@ extern map<lossmodel, lossmodelfunc> LOSSMODELMAP;
 //LOSS: invoke loss model and loss decoder
 //EM2:
 //GATE:
-//TEST:
+// TEST:
 
 istream& operator>> (istream&, noisemodel&);
 string To_string(noisemodel&);
 ostream& operator<< (ostream&, noisemodel&);
 typedef function<pair<double, double>(double,double)> noisemodelfunc;
 
-extern map<noisemodel, noisemodelfunc> NOISEMODELMAP;
+extern int myint;
+extern std::map<noisemodel, noisemodelfunc> NOISEMODELMAP;
 
 
 //################################## vector printing ##############################

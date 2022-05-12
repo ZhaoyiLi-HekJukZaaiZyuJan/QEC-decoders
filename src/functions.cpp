@@ -69,7 +69,7 @@ ostream& operator<< (ostream& os, noisemodel& N){
 	return os;
 }
 
-extern map<lossmodel, lossmodelfunc> LOSSMODELMAP {
+map<lossmodel, lossmodelfunc> LOSSMODELMAP = {
 	{INDEP_loss, [](const double& p,const double& q)->pair<double,double>{return {p,0};}}
 };
 
@@ -98,7 +98,7 @@ ostream& operator<< (ostream& os, lossmodel& L){
 	return os;
 }
 
-map<noisemodel, noisemodelfunc> NOISEMODELMAP {
+map<noisemodel, noisemodelfunc> NOISEMODELMAP = {
 	{EM2, [](const double& p,const double& q)->pair<double,double>{return {p*32/15 + 2*p,p*4/15};}}, //to first order
 	{INDEP, [](const double& p,const double& q)->pair<double,double>{return {p, q};}},
 	{TEST, [](const double& p,const double& q)->pair<double,double>{return {16/15*p, 4/15*p};}},

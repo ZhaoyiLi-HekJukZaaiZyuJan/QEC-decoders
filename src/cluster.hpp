@@ -39,12 +39,14 @@ class cluster {
 	int getRightDistance(const coord&, const vector<int>&);
 	
 	void getStabs();
+	int decodeWithMWPM(int, int, bool, surfacetype);
 	int decodeWithMWPMLoss(int, int, bool, surfacetype);
 	
 	vector<int> surf;///decode
 	void getSurf();///decode
 	void printSurf();///decode
-	void surfaceCorrect(PerfectMatching*, const int&, const vector<int>&, const vector<int>&, const int&, const surfacetype&);///decode
+	void surfaceCorrect(PerfectMatching*, const int&, const vector<int>&, const vector<int>&, const int& verbose = 0);
+	void surfaceCorrectLoss(PerfectMatching*, const int&, const vector<int>&, const vector<int>&, const int&, const surfacetype&);///decode
 	
 	int checkMeasurementOutcomeX1();
 	int checkMeasurementOutcomeX2();
