@@ -14,10 +14,12 @@ ifneq ($(shell uname -s),Darwin)
     LIBS += -lrt
 endif
 
-all: blossom5
+all: ${OBJS} #only compile, don't link
 
-blossom5: ${OBJS}
-	$(CXX) $(CFLAGS) ${LIBDIR} -o $@ ${OBJS} ${LIBS}
+# all: blossom5 ##previous version
+
+# blossom5: ${OBJS}
+# 	$(CXX) $(CFLAGS) ${LIBDIR} -o $@ ${OBJS} ${LIBS}
 
 .cpp.o:
 	$(CXX) $(CFLAGS) ${INCLUDES} $< -c -o $@
