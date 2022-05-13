@@ -244,7 +244,7 @@ void Cluster::decode422(int verbose = 0){
 	}
 	for (int c = 0; c < 3*S.x*S.y*S.z; c++) {
 		coord C(c, S);
-		if(this_surf == PLANE && ((C.l == 1 && (C.y == S.y - 1 || C.x == 0)) ||(C.l == 2 && (C.z == S.z - 1 || C.x == 0)))){
+		if(this_surf == PLANE && ((C.l == 1 && (C.y == S.y - 1 || C.x == 0)) || (C.l == 2 && (C.z == S.z - 1 || C.x == 0)))){
 			c_error_pos[c] = 1;
 			c_loss_pos[c] = 1;
 		}//	for planar code, remove errors on left, more, and lower boundaries to create edges.
@@ -445,23 +445,26 @@ int main(int argc, const char *argv[]) {
 	}
 	return return_value;
 }
-///./simulate -s PLANE --pmin 0.004 --pmax 0.008  --Np 10 --Nq 1 -n 500 --lmin 3 -v 1
+///################ [[4,2,2]] ################
 
-///./simulate -s PLANE --pmin 0.004 --pmax 0.008 --Np 10 -n 100 --lmin 11 -v 1
-///./simulate -N INDEP -s PLANE --pmin 0 -n 1000 --lmin 17 -v 1 --test 1
-///
-//timing test
+///######## 1D run ########
+
+//### loop run:
+	//(INDEP)  ###(p_th ~ 0.045 heuristics)
+		///./simulate -N INDEP -n 10000 --pmin 0 --pmax 0.06 --lmin 3 --Np 30 -v 1
+	//(GATE) ###(p_th ~)
+		///./simulate -N GATE -n 1000 --pmin 0.09 --pmax 0.012 --lmin 3 -v 1
+	//(GATE_biased (1)) run \beta = 1000 (*p_ref = *)
+		///./simulate --qmin 1000 --pmin 0.01 --pmax 0.016 --Np 30 --Nq 1 -n 10000 --lmin 3 --lmax 21 -v 1 -N GATE_biased
+
+//######## test ########
+	///./simulate -N INDEP -n 10000 --pmin 0.06 --pmax 0.09 --lmin 3 -v 1 --test ###(pE ~0.8)
+//######## timing test ########
 ///./simulate -s PLANE --pmin 0.01 --pmax 0.05  --Np 10 --Nq 1 -n 500 --lmin 3 -v 1
 
-//one step large
+//######## test large ########
 	//(simple time)
 	///./simulate -s PLANE --pmin 0.01 --pmax 0.05 --Np 10 --Nq 1 -n 500 --test 1 --lmin 20 -v 2
 
 	//(long time)
-	//./simulate -s PLANE --plmin 0.05 --plmax 0.05 --pmin 0.004 --pmax 0.008  --Np 10 --Nq 1 -n 500 --lmin 30 -v 1 --test 1
-
-//loop run
-	//(INDEP)
-		///./simulate -N INDEP  --pmin 0.01 --pmax 0.05 --pmin 0 --lmin 3 -v 1 ###(pE ~0.04)
-	//(GATE)
-		///./simulate -N GATE --pmin 0 --pmax 0.008 --pmin 0 --lmin 3 -v 1 ###(pE ~0.0?)
+	//./simulate -s PLANE --qmin 0.05 --qmax 0.05 --pmin 0.004 --pmax 0.008  --Np 10 --Nq 1 -n 500 --lmin 30 -v 1 --test 1
