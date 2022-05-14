@@ -31,9 +31,9 @@ auto start = chrono::steady_clock::now();
 class Cluster : public cluster {
 	vector<vector<int>> c_error_pos_422;
 	public:
-	void addPauli422(const double&, const double&, const int&seed = 0);
+	void addPauli422(const double&, const double&, const int&seed=0);
 	void addNoise(const double&, const double&, const noisemodel, const lossmodel, const int& seed = 0);
-	void addGateNoise(const double&, const int& seed = 0);
+	void addGateNoise(const double&, const int& seed=0);
 	Cluster(const coord&, const surfacetype&);
 	void decode422(int);
 };
@@ -330,7 +330,7 @@ int loopDecoding(const int lmin, const int lmax, const int trials, const double 
 							} catch (...) {
 								continue;
 							}
-							if (surf == PLANE && test_cluster.decodeWithMWPM(verbosity, 0, surf) == 1) {
+							if (surf == PLANE && test_cluster.decodeWithMWPMLoss(verbosity, 0, surf) == 1) {
 								num_correct ++; //correction successful
 							}
 						}
@@ -348,7 +348,7 @@ int loopDecoding(const int lmin, const int lmax, const int trials, const double 
 						} catch (...) {
 							continue;
 						}
-						if (surf == PLANE && test_cluster.decodeWithMWPM(verbosity, 0, surf) == 1) {
+						if (surf == PLANE && test_cluster.decodeWithMWPMLoss(verbosity, 0, surf) == 1) {
 							num_correct ++; //correction successful
 						}
 					}
@@ -420,25 +420,23 @@ int main(int argc, const char *argv[]) {
 	options.parse(argc, argv);
 	
 	//outputing options
-	cout << "hardware_concurrency:" << thread::hardware_concurrency() << endl;
+	cout << "hardware_concurrency" << thread::hardware_concurrency() << endl;
 	if (use_env) {
 		cout << "SLURM_CPUS_PER_TASK:" << atoi(getenv("SLURM_CPUS_PER_TASK")) << endl;
 	}
 	cout << "lmin:" << lmin << ";lmax:" << lmax << endl;
-	cout << "pmin:" << pmin << ";pmax:" << pmax << ";nP:" << Np << endl;
-	cout << "qmin:" << qmin << ";qmax:" << qmax << ";nPl:" << Nq << endl;
-	cout << "n:" << n << "seed:" << seed << ";thread:" << thread << endl;
-	cout << "noise model:" << N << ";loss model:" << L <<endl;
+	cout << "pmin:" << pmin << ";pmax:" << pmax << ";Np" << Np << endl;
+	cout << "qmin:" << qmin << ";qmax:" << qmax << ";Nq" << Nq << endl;
+	cout << "n:" << n << "seed:" << seed << ";thread" << thread << endl;
 	
 	
 	if (fname == "") {
 		fname = "l=" + to_string(lmin) + ",P=(" + to_string(pmin).substr(3,2) + "," + to_string(pmax).substr(3,2) + "),n=" +to_string(n) + to_string(s) + "," + to_string(N) + ".out";
 	}
 	if (test) {
-		Cluster test_cluster({lmin,lmin,lmin,0}, s);
 		int i = 0;
 		do {
-			testDecoding(test_cluster, pmin, qmin, seed, s, N, L, verbosity);
+			testDecoding(pmin, qmin, seed, s, N, L, verbosity);
 			i++;
 		}
 		while (i < times);

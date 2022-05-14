@@ -39,8 +39,8 @@ class cluster {
 	int getRightDistance(const coord&, const vector<int>&);
 	
 	void getStabs();
-	int decodeWithMWPM(int, int, bool, surfacetype);
-	int decodeWithMWPMLoss(int, int, bool, surfacetype);
+	int decodeWithMWPM(int, bool, surfacetype);
+	int decodeWithMWPMLoss(int, bool, surfacetype);
 	
 	vector<int> surf;///decode
 	void getSurf();///decode

@@ -651,7 +651,7 @@ void cluster::surfaceCorrectLoss(PerfectMatching* pm, const int& vertices_num, c
 		}
 }
 
-int cluster::decodeWithMWPM(int verbosity, int test, bool make_corrections, surfacetype surf){
+int cluster::decodeWithMWPM(int verbosity, bool make_corrections, surfacetype surf){
 	//PAIR MATCHING
 	getStabs();
     vector<int> vertexPosition;///actual (non boundary) vertices to be matched
@@ -747,7 +747,7 @@ int cluster::decodeWithMWPM(int verbosity, int test, bool make_corrections, surf
 }
 
 
-int cluster::decodeWithMWPMLoss(int verbosity, int test, bool make_corrections, surfacetype surf){
+int cluster::decodeWithMWPMLoss(int verbosity, bool make_corrections, surfacetype surf){
 	//PAIR MATCHING
 	getStabs();
     vector<int> wrong_chunks;//actual (non boundary) chunks to be matched
