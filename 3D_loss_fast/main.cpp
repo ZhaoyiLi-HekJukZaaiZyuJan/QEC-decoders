@@ -51,7 +51,7 @@ void testDecoding(cluster& test_cluster, const double& p, const double& pl, cons
 		cout << "t(getSuperChunks):" << double(clock()-start_t)/CLOCKS_PER_SEC << endl;//timing
 		start_t = clock();
 	}
-	int parity = test_cluster.decodeWithMWPMLoss(verbose, 1, 1, surf);
+	int parity = test_cluster.decodeWithMWPMLoss(verbose, 1, surf);
 
 	if (verbose >= 1){
 		if (verbose == 2) {
@@ -93,7 +93,7 @@ int loopDecoding(const int lmin, const int lmax, const int trials, const double 
 							cluster test_cluster({l,l,l,0}, surf);
 							for(int i = start; i < end; ++i){
 								test_cluster.addNoise(p, q, N, L);	
-								if (surf == PLANE && test_cluster.decodeWithMWPM(verbose,0,0,surf) == 1) {
+								if (surf == PLANE && test_cluster.decodeWithMWPM(verbose,0,surf) == 1) {
 									num_correct ++; //correction successful
 								}
 							}
@@ -101,7 +101,7 @@ int loopDecoding(const int lmin, const int lmax, const int trials, const double 
 					} else {
 						for(int i = 0; i < trials; ++i){
 							test_cluster.addNoise(p, q, N, L);
-							if (surf == PLANE && test_cluster.decodeWithMWPM(verbose,0,0,surf) == 1) {
+							if (surf == PLANE && test_cluster.decodeWithMWPM(verbose,0,surf) == 1) {
 								num_correct ++; //correction successful
 							}
 						}
@@ -117,7 +117,7 @@ int loopDecoding(const int lmin, const int lmax, const int trials, const double 
 								} catch (...) {
 									continue;
 								}
-								if (surf == PLANE && test_cluster.decodeWithMWPMLoss(verbose,0,0,surf) == 1) {
+								if (surf == PLANE && test_cluster.decodeWithMWPMLoss(verbose,0,surf) == 1) {
 									num_correct ++; //correction successful
 								}
 							}
@@ -130,7 +130,7 @@ int loopDecoding(const int lmin, const int lmax, const int trials, const double 
 							} catch (...) {
 								continue;
 							}
-							if (surf == PLANE && test_cluster.decodeWithMWPMLoss(verbose,0,0,surf) == 1) {
+							if (surf == PLANE && test_cluster.decodeWithMWPMLoss(verbose,0,surf) == 1) {
 								num_correct ++; //correction successful
 							}
 						}
@@ -164,32 +164,35 @@ int main(int argc, const char *argv[]) {
 	surfacetype s;
 	noisemodel N;
 	lossmodel L;
-	bool test, use_env, thread, make_corrections;
-	int verbose;
+	bool test, use_env, thread, make_corrections, out;
+	int verbosity, return_value = 0;
 	int lmin, lmax, n, Np, Nq, seed, times;
 	float pmin, pmax, qmin, qmax;
+	
+	//getting options
 	cxxopts::Options options(*argv,
 							 "Simulator for fault-tolerant measurement-based quantum "
 							 "computation on foliated surface code cluster states"
 							 );
 	options.add_options()
 	("fname", "filename", cxxopts::value(fname)->default_value(""))
+	("out", "output in this directory as an .out file", cxxopts::value(out)->default_value("0"))
 	("s", "surface type", cxxopts::value(s)->default_value("PLANE"))
 	("lmin", "Minimal size of mesh", cxxopts::value(lmin)->default_value("3"))
 	("lmax", "Maximal size of mesh", cxxopts::value(lmax)->default_value("17"))
-	("n", "Number of trials", cxxopts::value(n)->default_value("10000"))
+	("n", "Number of trials", cxxopts::value(n)->default_value("100"))
 	
-	("N", "noise model", cxxopts::value(N)->default_value("EM2"))
+	("N", "noise model", cxxopts::value(N)->default_value("GATE"))
 	("Np", "z error p Points", cxxopts::value(Np)->default_value("10"))
-	("pmin", "Minimal z error probability", cxxopts::value(pmin)->default_value("0.000"))
+	("pmin", "Minimal z error probability", cxxopts::value(pmin)->default_value("0.001"))
 	("pmax", "Maximal z error probability", cxxopts::value(pmax)->default_value("0.008"))
 	
 	("L", "loss model", cxxopts::value(L)->default_value("OFF_loss"))
-	("Nq", "loss p points", cxxopts::value(Nq)->default_value("10"))
-	("qmin", "Minimal loss probability/bias", cxxopts::value(qmin)->default_value("0"))
-	("qmax", "Maximal loss probability/bias", cxxopts::value(qmax)->default_value("0"))
+	("Nq", "loss p points", cxxopts::value(Nq)->default_value("1"))
+	("qmin", "Minimal loss probability", cxxopts::value(qmin)->default_value("0"))
+	("qmax", "Maximal loss probability", cxxopts::value(qmax)->default_value("0"))
 	
-	("v", "verbosity switch", cxxopts::value(verbose)->default_value("0"))
+	("v, verbosity", "verbosity switch", cxxopts::value(verbosity)->default_value("0"))
 	("seed", "seed switch", cxxopts::value(seed)->default_value("0"))
 	("thread", "thread switch", cxxopts::value(thread)->default_value("0"))
 	("use_env", "use environment variables", cxxopts::value(use_env)->default_value("0"))
@@ -209,6 +212,7 @@ int main(int argc, const char *argv[]) {
 	cout << "n:" << n << "seed:" << seed << ";thread:" << thread << endl;
 	cout << "noise model:" << N << ";loss model:" << L <<endl;
 	
+	
 	if (fname == "") {
 		fname = "l=" + to_string(lmin) + ",p=(" + to_string(pmin).substr(3,2) + "," + to_string(pmax).substr(3,2) + "),n=" +to_string(n) + To_string(s) + "," + To_string(N) + ".out";
 	}
@@ -217,12 +221,12 @@ int main(int argc, const char *argv[]) {
 		cluster test_cluster({lmin,lmin,lmin,0}, s);
 		int i = 0;
 		do {
-			testDecoding(test_cluster, pmin, qmin, seed, s, N, L, verbose);
+			testDecoding(test_cluster, pmin, qmin, seed, s, N, L, verbosity);
 			i++;
 		}
 		while (i < times);
 	} else{
-		loopDecoding(lmin, lmax, n, pmin, pmax,  Np - 1, qmin, qmax, Nq - 1, fname, s, N, L, verbose, thread, use_env, make_corrections);
+		loopDecoding(lmin, lmax, n, pmin, pmax,  Np - 1, qmin, qmax, Nq - 1, fname, s, N, L, verbosity, thread, use_env, make_corrections);
 	}
 }
 
