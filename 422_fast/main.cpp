@@ -94,11 +94,14 @@ void Cluster::addGateNoise(const double & p, const int& seed){
 	//Error Model 1: uncorrelated error distribution for all physical z_error_poss
 	for (int c = 0; c < 3*S.x*S.y*S.z; c++) {
 		for (int k = 0; k < 4; k++) {
-			if(dist(engine) < p*4/3) {
-				c_error_pos_422[c][k] = -1;
-			} else {
-				c_error_pos_422[c][k] = 1;
+			for (int i = 0; i < 2; i++) { //p_S, p_M		
+				if(dist(engine) < p*2/3) {
+					c_error_pos_422[c][k] = -1;
+				} else {
+					c_error_pos_422[c][k] = 1;
+				}
 			}
+			
 		}
 	}
 	for (int c = 0; c < S.x*S.y*S.z; c++) {
@@ -110,88 +113,93 @@ void Cluster::addGateNoise(const double & p, const int& seed){
 				double p3 = dist(engine); //process 3 (rose)
 				double p4 = dist(engine); //process 4 (purple)
 				
-				if (p*4/15 < p1 < p*8/15) { //black
+				if (p1 < p*4/15) {
+					c_error_pos_422[C.getFaceQubits(S, face, 0, 3)][i] *= -1;//3
+				} else if (p*4/15 < p1 && p1 < p*8/15){
+					c_error_pos_422[C.getFaceQubits(S, face, 0, 0)][i] *= -1;//0
+					c_error_pos_422[C.getFaceQubits(S, face, 0, 1)][i] *= -1;//1
+					c_error_pos_422[C.getFaceQubits(S, face, 0, 2)][i] *= -1;//2
+				} else if (p*8/15 < p1 && p1 < p*12/15){
+					c_error_pos_422[C.getFaceQubits(S, face, 0, 0)][i] *= -1;//0
+					c_error_pos_422[C.getFaceQubits(S, face, 0, 1)][i] *= -1;//1
+					c_error_pos_422[C.getFaceQubits(S, face, 0, 2)][i] *= -1;//2
 					c_error_pos_422[C.getFaceQubits(S, face, 0, 3)][i] *= -1;//3
 				}
 				
-				if (p4 < p*8/15) { //purple
-					if (C.z % 2 == 1) {//even layer
-						c_error_pos_422[C.getFaceQubits(S, face, 0, 0)][i] *= -1;//0
-					} else {
-						c_error_pos_422[C.getFaceQubits(S, face, 0, 1)][i] *= -1;//1
-					}
-				}
-				
-				if ((p2 < p*4/15 && p1 >= p*4/15) || (p1 < p*4/15 && p2 >= p*4/15)) {
-					c_error_pos_422[C.getFaceQubits(S, face, 0, 0)][i] *= -1;//0
-					c_error_pos_422[C.getFaceQubits(S, face, 0, 1)][i] *= -1;//1
-					c_error_pos_422[C.getFaceQubits(S, face, 0, 2)][i] *= -1; //2
-				} else if (p*4/15 < p2 < p*8/15) {
+				if (p2 < p*4/15) {
 					c_error_pos_422[C.getFaceQubits(S, face, 0, 2)][i] *= -1;//2
-				} else if (p*8/15 < p2 < p*12/15) {
-					c_error_pos_422[C.getFaceQubits(S, face, 0, 1)][i] *= -1;//1
+				} else if (p*4/15 < p2 && p2 < p*8/15) {
 					c_error_pos_422[C.getFaceQubits(S, face, 0, 0)][i] *= -1;//0
+					c_error_pos_422[C.getFaceQubits(S, face, 0, 1)][i] *= -1;//1
+				} else if (p*8/15 < p2 && p2 < p*12/15) {			
+					c_error_pos_422[C.getFaceQubits(S, face, 0, 0)][i] *= -1;//0
+					c_error_pos_422[C.getFaceQubits(S, face, 0, 1)][i] *= -1;//1
+					c_error_pos_422[C.getFaceQubits(S, face, 0, 2)][i] *= -1;//2	
 				}
 				
-				if ((p3 < p*4/15 && C.z % 2 == 1) || (p*4/15 < p3 < p*8/15 && C.z % 2 == 0)) { //horizontal
+				if (p3 < p*4/15) {
 					c_error_pos_422[C.getFaceQubits(S, face, 0, 1)][i] *= -1;//1
-				} else if ((p3 < p*4/15 && C.z % 2 == 0) || (p*4/15 < p3 < p*8/15 && C.z % 2 == 1)){
+				} else if (p*4/15 < p3 && p3 < p*8/15){
 					c_error_pos_422[C.getFaceQubits(S, face, 0, 0)][i] *= -1;//0
-				} else if (p*8/15 < p3 < p*12/15){
+				} else if (p*8/15 < p3 && p3 < p*12/15){
+					c_error_pos_422[C.getFaceQubits(S, face, 0, 0)][i] *= -1;//0
 					c_error_pos_422[C.getFaceQubits(S, face, 0, 1)][i] *= -1;//1
+				}
+
+				if (p4 < p*8/15) { //purple
 					c_error_pos_422[C.getFaceQubits(S, face, 0, 0)][i] *= -1;//0
 				}
 			}
 		}
 			
-		//initialization errors X
-		for (int i = 0; i < 2; i++) {//422
-			for (int face = 0; face < 3; face ++) {
-				double pA1 = dist(engine); //process 1 (black)
-				double pA2 = dist(engine); //process 2 (pink)
+		// //initialization errors X
+		// for (int i = 0; i < 2; i++) {//422
+		// 	for (int face = 0; face < 3; face ++) {
+		// 		double pA1 = dist(engine); //process 1 (black)
+		// 		double pA2 = dist(engine); //process 2 (pink)
 				
-				if (pA1 < p*4/3*(1-p*2/3)){ // Z H errors
-					for(int k=0 ; k <4; k++){
-						c_error_pos_422[C.getFaceQubits(S, face, 0, k)][i+2] *= -1;//0123
-					}
-				}
+		// 		if (pA1 < p*4/3*(1-p*2/3)){ // Z H errors
+		// 			for(int k=0 ; k <4; k++){
+		// 				c_error_pos_422[C.getFaceQubits(S, face, 0, k)][i+2] *= -1;//0123
+		// 			}
+		// 		}
 				
-				if (pA2 < p*4/15){ // CZ Errors
-					for(int k=0 ; k <4; k++){
-						c_error_pos_422[C.getFaceQubits(S, face, 0, k)][i+2] *= -1;//0123
-					}
-				} else if (p*4/15 < pA2 < p*8/15){
-					for(int k=0 ; k <4; k++){
-						c_error_pos_422[C.getFaceQubits(S, face, 0, k)][i] *= -1;//0123
-					}
-				}
-			}
-		}
+		// 		if (pA2 < p*4/15){ // CZ Errors
+		// 			for(int k=0 ; k <4; k++){
+		// 				c_error_pos_422[C.getFaceQubits(S, face, 0, k)][i+2] *= -1;//0123
+		// 			}
+		// 		} else if (p*4/15 < pA2 < p*8/15){
+		// 			for(int k=0 ; k <4; k++){
+		// 				c_error_pos_422[C.getFaceQubits(S, face, 0, k)][i] *= -1;//0123
+		// 			}
+		// 		}
+		// 	}
+		// }
 			
-		//initialization errors X
-		for (int k =0; k<4; k++) {
-			for (int i = 0; i < 3; i = i + 2) {
-				for (int face = 0; face < 3; face ++) {
-					double pA1 = dist(engine); //process 1 (black)
-					double pA2 = dist(engine); //process 2 (pink)
-					double pA3 = dist(engine); //process 2 (pink)
+		// //initialization errors X
+		// for (int k =0; k<4; k++) {
+		// 	for (int i = 0; i < 3; i = i + 2) {
+		// 		for (int face = 0; face < 3; face ++) {
+		// 			double pA1 = dist(engine); //process 1 (black)
+		// 			double pA2 = dist(engine); //process 2 (pink)
+		// 			double pA3 = dist(engine); //process 2 (pink)
 					
-					if (pA1 < p*2/3){ // Z H errors
-						c_error_pos_422[C.getFaceQubits(S, face, 0, k)][i+1] *= -1;//k
-					}
+		// 			if (pA1 < p*2/3){ // Z H errors
+		// 				c_error_pos_422[C.getFaceQubits(S, face, 0, k)][i+1] *= -1;//k
+		// 			}
 					
-					if (pA2 < p*2/3){ // Z H errors
-						c_error_pos_422[C.getFaceQubits(S, face, 0, k)][i] *= -1;//k
-					}
+		// 			if (pA2 < p*2/3){ // Z H errors
+		// 				c_error_pos_422[C.getFaceQubits(S, face, 0, k)][i] *= -1;//k
+		// 			}
 					
-					if (pA3 < p*4/15){ // CZ Errors
-						c_error_pos_422[C.getFaceQubits(S, face, 0, k)][i+1] *= -1;//k
-					} else if (p*4/15 < pA2 < p*8/15){
-						c_error_pos_422[C.getFaceQubits(S, face, 0, k)][i] *= -1;//k
-					}
-				}
-			}
-		}
+		// 			if (pA3 < p*4/15){ // CZ Errors
+		// 				c_error_pos_422[C.getFaceQubits(S, face, 0, k)][i+1] *= -1;//k
+		// 			} else if (p*4/15 < pA2 < p*8/15){
+		// 				c_error_pos_422[C.getFaceQubits(S, face, 0, k)][i] *= -1;//k
+		// 			}
+		// 		}
+		// 	}
+		// }
 	}
 }
 
@@ -454,8 +462,8 @@ int main(int argc, const char *argv[]) {
 //### loop run:
 	//(INDEP)  ###(p_th ~ 0.045 heuristics)
 		///./simulate -N INDEP -n 10000 --pmin 0 --pmax 0.06 --lmin 3 --Np 30 -v 1
-	//(GATE) ###(p_th ~)
-		///./simulate -N GATE -n 1000 --pmin 0.09 --pmax 0.012 --lmin 3 -v 1
+	//(GATE) ###(p_th ~ 0.0043, pl ~ 0.1)
+		///./simulate -N GATE -n 10000 --pmin 0 --pmax 0.008 --lmin 3 -v 1
 	//(GATE_biased (1)) run \beta = 1000 (*p_ref = *)
 		///./simulate --qmin 1000 --pmin 0.01 --pmax 0.016 --Np 30 --Nq 1 -n 10000 --lmin 3 --lmax 21 -v 1 -N GATE_biased
 

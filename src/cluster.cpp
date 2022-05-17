@@ -155,6 +155,79 @@ void cluster::addGateNoise(const double & p, const int& seed=0){
 	}
 }
 
+void cluster::addFullGateNoise(const double & p, const int& seed=0){
+	//Total heuristic Probabilities
+	random_device rd;
+	mt19937 engine{rd()};
+	if (seed != 0) {
+		engine.seed(seed);
+	}
+	uniform_real_distribution<> dist(0.0, 1.0);
+	
+	//Initialization of error operator
+	fill(c_error_pos.begin(), c_error_pos.end(), 1);
+	for (int c = 0; c < 3*S.x*S.y*S.z; c++) {
+		for (int i = 0; i < 3; i++) { //p_S, p_M, p_P
+			if(dist(engine) < p*2/3) {
+				c_error_pos[c] *= -1;
+			}
+		}
+	}
+
+	for (int c = 0; c < S.x*S.y*S.z; c++) {
+		coord C(c,S);
+		for (int face = 0; face < 3; face++) {
+			double p1 = dist(engine); //process 1 (black)
+			double p2 = dist(engine); //process 2 (pink)
+			double p3 = dist(engine); //process 3 (rose)
+			double p4 = dist(engine); //process 4 (purple)
+
+			if (p1 < p*4/15) {
+				c_error_pos[C.getFaceQubits(S, face, 0, 3)] *= -1;//3
+			} else if (p*4/15 < p1 && p1 < p*8/15){
+				c_error_pos[C.getFaceQubits(S, face, 0, 0)] *= -1;//0
+				c_error_pos[C.getFaceQubits(S, face, 0, 1)] *= -1;//1
+				c_error_pos[C.getFaceQubits(S, face, 0, 2)] *= -1;//2
+			} else if (p*8/15 < p1 && p1 < p*12/15){
+				c_error_pos[C.getFaceQubits(S, face, 0, 0)] *= -1;//0
+				c_error_pos[C.getFaceQubits(S, face, 0, 1)] *= -1;//1
+				c_error_pos[C.getFaceQubits(S, face, 0, 2)] *= -1;//2
+				c_error_pos[C.getFaceQubits(S, face, 0, 3)] *= -1;//3
+			}
+			
+			if (p2 < p*4/15) {
+				c_error_pos[C.getFaceQubits(S, face, 0, 2)] *= -1;//2
+			} else if (p*4/15 < p2 && p2 < p*8/15) {
+				c_error_pos[C.getFaceQubits(S, face, 0, 0)] *= -1;//0
+				c_error_pos[C.getFaceQubits(S, face, 0, 1)] *= -1;//1
+			} else if (p*8/15 < p2 && p2 < p*12/15) {			
+				c_error_pos[C.getFaceQubits(S, face, 0, 0)] *= -1;//0
+				c_error_pos[C.getFaceQubits(S, face, 0, 1)] *= -1;//1
+				c_error_pos[C.getFaceQubits(S, face, 0, 2)] *= -1;//2	
+			}
+			
+			if (p3 < p*4/15) {
+				c_error_pos[C.getFaceQubits(S, face, 0, 1)] *= -1;//1
+			} else if (p*4/15 < p3 && p3 < p*8/15){
+				c_error_pos[C.getFaceQubits(S, face, 0, 0)] *= -1;//0
+			} else if (p*8/15 < p3 && p3 < p*12/15){
+				c_error_pos[C.getFaceQubits(S, face, 0, 0)] *= -1;//0
+				c_error_pos[C.getFaceQubits(S, face, 0, 1)] *= -1;//1
+			}
+
+			if (p4 < p*8/15) { //purple
+				c_error_pos[C.getFaceQubits(S, face, 0, 0)] *= -1;//0
+			}
+		}
+	}
+	for (int c = 0; c < 3*S.x*S.y*S.z; c++) {
+		coord C(c, S);
+		if(this_surf == PLANE && ((C.l == 1 && (C.y == S.y - 1 || C.x == 0)) ||(C.l == 2 && (C.z == S.z - 1 || C.x == 0)))){
+			c_error_pos[c] = 1;
+		}//	for planar code, remove errors on left, more, and lower boundaries to create edges.
+	}
+}
+
 void cluster::addBiasedGateNoise(const double & p, const double & B, const int& seed=0){
 	//Total heuristic Probabilities
 	random_device rd;
@@ -235,10 +308,13 @@ void cluster::addError(){ //for debugging
 }
 
 //No seed used for seed = 0
-void cluster::addNoise(const double & p, const double & q, const noisemodel N, const lossmodel Nl, const int& seed){
+void cluster::addNoise(const double & p, const double & q, const noisemodel N, const lossmodel L, const int& seed){
 	// Pauli part
 	if (N == GATE) {
 		addGateNoise(p, seed);
+	}
+	if (N == GATE_full) {
+		addFullGateNoise(p, seed);
 	}
 	if (N == GATE_biased) { //p:error probability, //q: bias
 		addBiasedGateNoise(p, q, seed);
@@ -247,13 +323,13 @@ void cluster::addNoise(const double & p, const double & q, const noisemodel N, c
 		addPauli(p*p,0,seed);
 		addLoss(2*p*(1-p),0,seed);
 	} 
-	if (N != GATE && N != GATE_biased && N != INDEP_211) {
+	if (N != GATE && N != GATE_full && N != GATE_biased && N != INDEP_211) {
 		addPauli(NOISEMODELMAP[N](p,0).first, NOISEMODELMAP[N](p,0).second,  seed);
 	} 
 
 	// Loss part
-	if (Nl == OFF_loss){}
-	if (Nl == toLoss) { //convert measured syndrom to loss errors
+	if (L == OFF_loss){}
+	if (L == toLoss) { //convert measured syndrom to loss errors
 		getStabs();
 		for (int c = 0; c < S.x*S.y*S.z; c++){
 			if (stabs[c] == -1) {
@@ -264,8 +340,8 @@ void cluster::addNoise(const double & p, const double & q, const noisemodel N, c
 			}
 		}
 	}
-	if (Nl != OFF_loss && Nl != toLoss){
-		addLoss(LOSSMODELMAP[Nl](q,0).first, LOSSMODELMAP[Nl](q,0).second, seed);
+	if (L != OFF_loss && L != toLoss){
+		addLoss(LOSSMODELMAP[L](q,0).first, LOSSMODELMAP[L](q,0).second, seed);
 	}
 }
 

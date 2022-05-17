@@ -240,7 +240,7 @@ int main(int argc, const char *argv[]) {
 //./simulate -s PLANE --qmin 0 --qmax 0 --pmin 0.05 --pmax 0.1  --Np 20 --Nq 1 -n 1000 --lmin 3 -v 1 -N INDEP_211
 //### INDEP run: (*p_th = 3%*)
 ///./simulate -s PLANE --qmin 0 --qmax 0 --pmin 0.02 --pmax 0.05  --Np 20 --Nq 1 -n 1000 --lmin 3 --lmax 17 -v 1 -N INDEP
-//### GATE/EM2/EM2_full run: (*p_th = 0.58%*)
+//### GATE:  (*p_th = 0.585, 0.65 verified: 53018107%*)/EM2(*p_th = 0.572, 0.59 verified: 53112898%*)/EM2_full run: 
 //./simulate -s PLANE --qmin 0 --qmax 0 --pmin 0 --pmax 0.009  --Np 20 --Nq 1 -n 10000 --lmin 3 --lmax 17 -v 1 -N GATE
 //./simulate -s PLANE --qmin 0 --qmax 0 --pmin 0 --pmax 0.009  --Np 20 --Nq 1 -n 10000 --lmin 3 --lmax 17 -v 1 -N EM2
 //### GATE_biased run \beta = 1000 (*p_ref = 0.74% ArXiv 1308.4776 *)

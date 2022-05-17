@@ -632,7 +632,7 @@ void testDecoding(Cluster& test_cluster, const double& p, const double& q, const
 		start_t = clock();
 	}
 	cout << "there" <<endl;
-	int parity = test_cluster.decodeWithMWPMLoss(verbosity, 1, 1, surf);
+	int parity = test_cluster.decodeWithMWPMLoss(verbosity, 1, surf);
 	
 	if (verbosity >= 1){
 		if (verbosity == 2) {
@@ -683,7 +683,7 @@ int loopDecoding(const int lmin, const int lmax, const int trials, const double 
 							} catch (...) {
 								continue;
 							}
-							if (surf == PLANE && test_cluster.decodeWithMWPMLoss(verbosity,make_corrections,0,surf) == 1) {
+							if (surf == PLANE && test_cluster.decodeWithMWPMLoss(verbosity,make_corrections,surf) == 1) {
 								num_correct ++; //correction successful
 							}
 						}
@@ -697,7 +697,7 @@ int loopDecoding(const int lmin, const int lmax, const int trials, const double 
 						} catch (...) {
 							continue;
 						}
-						if (surf == PLANE && test_cluster.decodeWithMWPMLoss(verbosity,make_corrections,0,surf) == 1) {
+						if (surf == PLANE && test_cluster.decodeWithMWPMLoss(verbosity,make_corrections,surf) == 1) {
 							num_correct ++; //correction successful
 						}
 					}

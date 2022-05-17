@@ -36,8 +36,10 @@ istream& operator>> (istream& is, noisemodel& N){
 	if (str == "INDEP") N = INDEP;
 	else if (str == "INDEP_211") N = INDEP_211;
 	else if (str == "EM2") N = EM2;
+	else if (str == "EM2p0") N = EM2p0;
 	else if (str == "EM2_full") N = EM2_full;
 	else if (str == "GATE") N = GATE;
+	else if (str == "GATE_full") N = GATE_full;
 	else if (str == "GATE_biased") N = GATE_biased;
 	else if (str == "DEPOL1") N = DEPOL1;
 	else if (str == "DEPOL2") N = DEPOL2;
@@ -52,8 +54,10 @@ string To_string(noisemodel& N){
 	if (N == INDEP) return "INDEP";
 	else if (N == INDEP_211) return "INDEP_211";
 	else if (N == EM2) return "EM2";
+	else if (N == EM2p0) return "EM2p0";
 	else if (N == EM2_full) return "EM2_full";
 	else if (N == GATE) return "GATE";
+	else if (N == GATE_full) return "GATE_full";
 	else if (N == GATE_biased) return "GATE_biased";
 	else if (N == DEPOL1) return "DEPOL1";
 	else if (N == DEPOL2) return "DEPOL2";
@@ -99,7 +103,8 @@ ostream& operator<< (ostream& os, lossmodel& L){
 }
 
 map<noisemodel, noisemodelfunc> NOISEMODELMAP = {
-	{EM2, [](const double& p,const double& q)->pair<double,double>{return {p*32/15 + 2*p,p*4/15};}}, //to first order
+	{EM2p0, [](const double& p,const double& q)->pair<double,double>{return {p*32/15, p*4/15};}}, //to first order
+	{EM2, [](const double& p,const double& q)->pair<double,double>{return {p*32/15 + 2*p, p*4/15};}}, //to first order
 	{INDEP, [](const double& p,const double& q)->pair<double,double>{return {p, q};}},
 	{TEST, [](const double& p,const double& q)->pair<double,double>{return {16/15*p, 4/15*p};}},
 	{EM2_full, [](const double& p,const double& q)->pair<double,double>{return {p*62/15 - pow(p,2)*1096/75 + pow(p,3)*32224/1125 - pow(p,4)*567296 /16875 + pow(p,5)*1196032/50625 - pow(p,6)*4194304/455625 + pow(p,7)*2097152/1366875, 1/2-sqrt(1/4-p*4/15)};}}

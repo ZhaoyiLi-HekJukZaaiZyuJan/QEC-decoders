@@ -26,6 +26,7 @@ class cluster {
 	void addNoise(const double&, const double&, const noisemodel, const lossmodel, const int& seed =0);
 	void addPauli(const double&, const double&, const int& seed = 0);
 	void addGateNoise(const double&, const int&);
+	void addFullGateNoise(const double&, const int&);
 	
 	void addBiasedGateNoise(const double&, const double&, const int&);
 	void addError(); // manually add error
@@ -50,5 +51,4 @@ class cluster {
 	
 	int checkMeasurementOutcomeX1();
 	int checkMeasurementOutcomeX2();
-
 };

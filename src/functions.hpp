@@ -34,6 +34,7 @@ extern std::map<lossmodel, lossmodelfunc> LOSSMODELMAP;
 //DEPOL1: simulated time depol
 //DEPOL2: Pseudo depol noise with primal-dual lattice identification
 //LOSS: invoke loss model and loss decoder
+//EM2p0: Raussendorf model with p_M = p_S = p_P = 0; p_th = 0.96% 
 //EM2:
 //GATE:
 // TEST:
