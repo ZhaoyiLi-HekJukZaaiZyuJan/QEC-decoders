@@ -115,7 +115,7 @@ void cluster::addGateNoise(const double & p, const int& seed=0){
 	}
 	uniform_real_distribution<> dist(0.0, 1.0);
 	
-	//Initialization of error operator
+	//////// Initialization of error operator //////// 
 	fill(c_error_pos.begin(), c_error_pos.end(), 1);
 	for (int c = 0; c < 3*S.x*S.y*S.z; c++) {
 		for (int i = 0; i < 3; i++) { //p_S, p_M, p_P
@@ -130,7 +130,7 @@ void cluster::addGateNoise(const double & p, const int& seed=0){
 		}
 	}
 
-
+	//////// CZ gates //////// 
 	for (int c = 0; c < S.x*S.y*S.z; c++) {
 		coord C(c,S);
 		for (int face = 0; face < 3; face++) {
@@ -164,7 +164,7 @@ void cluster::addFullGateNoise(const double & p, const int& seed=0){
 	}
 	uniform_real_distribution<> dist(0.0, 1.0);
 	
-	//Initialization of error operator
+	//////// Initialization of error operator ////////
 	fill(c_error_pos.begin(), c_error_pos.end(), 1);
 	for (int c = 0; c < 3*S.x*S.y*S.z; c++) {
 		for (int i = 0; i < 3; i++) { //p_S, p_M, p_P
@@ -174,6 +174,7 @@ void cluster::addFullGateNoise(const double & p, const int& seed=0){
 		}
 	}
 
+	//////// CZ gates ////////
 	for (int c = 0; c < S.x*S.y*S.z; c++) {
 		coord C(c,S);
 		for (int face = 0; face < 3; face++) {

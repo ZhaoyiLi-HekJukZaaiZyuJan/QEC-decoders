@@ -6,4 +6,4 @@
 ## BSUB -o /scratch/users/ladmon/3D/results/%J_%I_terminal.out  #output - %J is the job-id %I is the job-array index
 ## BSUB -e /scratch/users/ladmon/3D/results/%J_%I_terminal.err  #error - %J is the job-id %I is the job-array index 
 
-./simulate -s PLANE --qmin 0 --qmax 0 --pmin 0 --pmax 0.006  --Np 50 --Nq 1 -n 10000 --lmin 3 --lmax 21 -v 1 -N GATE_full --fname "/scratch/users/ladmon/3D/results/${LSB_JOBID}_${LSB_JOBINDEX}.out" --out
+./simulate -s PLANE --qmin 0 --qmax 0 --pmin 0 --pmax 0.006  --Np 50 --Nq 1 -n 10000 --lmin 3 --lmax 21 -v 1 -N GATE_full --fname "/u/xo/ladmon/results/${LSB_JOBID}_${LSB_JOBINDEX}.out" --out

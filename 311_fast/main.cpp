@@ -116,7 +116,7 @@ void Cluster::addGateNoisea(const double & p, const int& seed){
 	//	}
 	//initialization, measurement and storage errors
 	for (int c = 0; c < 3*S.x*S.y*S.z; c++) {
-		for (int i = 0; i < 2; i++) {// 311
+		for (int i = 0; i < 3; i++) {// 311
 	//			if(dist(engine) < p*2-pow(p,2)*4/3) {
 			if(dist(engine) < p*4/3) {
 				c_error_pos_311[c][i] = -1;
@@ -131,51 +131,89 @@ void Cluster::addGateNoisea(const double & p, const int& seed){
 		if (C.z == S.z - 1 || C.x == 0) {//remove boundary cubes
 			continue;
 		}
-		for (int i = 0; i < 2; i++) {//311
+		for (int i = 0; i < 3; i++) {//311
 			for (int face = 0; face < 3; face ++) {
 				for (int direction = 0; direction < 2; direction++) {//horizontal/vertical
-				
+
+					int j = direction ? i : divmod(i+2, 3);
+
 					double p1 = dist(engine); //process 1 (black)
 					double p2 = dist(engine); //process 2 (pink)
 					double p3 = dist(engine); //process 3 (rose)
 					double p4 = dist(engine); //process 4 (purple)
 					
+					double p5 = dist(engine); //process 5 (black2)
+					double p6 = dist(engine); //process 6 (pink2)
 
-					if (p1 < p*8/15) { //black
-						c_error_pos_311[C.getFaceQubits(S, face, direction, 3)][i] *= -1;
+					if (p1 < p*4/15) { //black
+						c_error_pos_311[C.getFaceQubits(S, face, direction, 3)][j] *= -1;
+					} if (p*4/15 < p1 && p1 < p*8/15) {
+						c_error_pos_311[C.getFaceQubits(S, face, direction, 3)][j] *= -1;
 					}
-					if (p4 < p*4/15) { //purple
-						c_error_pos_311[C.getFaceQubits(S, face, direction, 0)][i] *= -1;
-					} else if (p*4/15 < p4 && p4 < p*8/15) { //purple
-						c_error_pos_311[C.getFaceQubits(S, face, direction, 1)][i] *= -1;
-						c_error_pos_311[C.getFaceQubits(S, face, direction, 2)][i] *= -1;
-						c_error_pos_311[C.getFaceQubits(S, face, direction, 3)][i] *= -1;
-					} else if (p*8/15 < p4 && p4 < p*12/15) { //purple
-						c_error_pos_311[C.getFaceQubits(S, face, direction, 0)][i] *= -1;
-						c_error_pos_311[C.getFaceQubits(S, face, direction, 1)][i] *= -1;
-						c_error_pos_311[C.getFaceQubits(S, face, direction, 2)][i] *= -1;
-						c_error_pos_311[C.getFaceQubits(S, face, direction, 3)][i] *= -1;
-					}
-					
-					
+							
 					if (p2 < p*4/15) { //pink
-						c_error_pos_311[C.getFaceQubits(S, face, direction, 2)][i] *= -1;
+						c_error_pos_311[C.getFaceQubits(S, face, direction, 2)][j] *= -1;
 					} else if (p*4/15 < p2 && p2 < p*8/15) {
-						c_error_pos_311[C.getFaceQubits(S, face, direction, 3)][i] *= -1;
+						c_error_pos_311[C.getFaceQubits(S, face, direction, 3)][j] *= -1;
 					} else if (p*8/15 < p2 && p2 < p*12/15) {
-						c_error_pos_311[C.getFaceQubits(S, face, direction, 2)][i] *= -1;
-						c_error_pos_311[C.getFaceQubits(S, face, direction, 3)][i] *= -1;
+						c_error_pos_311[C.getFaceQubits(S, face, direction, 2)][j] *= -1;
+						c_error_pos_311[C.getFaceQubits(S, face, direction, 3)][j] *= -1;
 					}
 
 					if (p3 < p*4/15) { //rose
-						c_error_pos_311[C.getFaceQubits(S, face, direction, 1)][i] *= -1;
+						c_error_pos_311[C.getFaceQubits(S, face, direction, 1)][j] *= -1;
 					} else if (p*4/15 < p3 && p3 < p*8/15) {
-						c_error_pos_311[C.getFaceQubits(S, face, direction, 1)][i] *= -1;
-						c_error_pos_311[C.getFaceQubits(S, face, direction, 2)][i] *= -1;
-						c_error_pos_311[C.getFaceQubits(S, face, direction, 3)][i] *= -1;
+						c_error_pos_311[C.getFaceQubits(S, face, direction, 1)][j] *= -1;
+						c_error_pos_311[C.getFaceQubits(S, face, direction, 2)][j] *= -1;
+						c_error_pos_311[C.getFaceQubits(S, face, direction, 3)][j] *= -1;
 					} else if (p*8/15 < p3 && p3 < p*12/15) {
-						c_error_pos_311[C.getFaceQubits(S, face, direction, 2)][i] *= -1;
-						c_error_pos_311[C.getFaceQubits(S, face, direction, 3)][i] *= -1;
+						c_error_pos_311[C.getFaceQubits(S, face, direction, 2)][j] *= -1;
+						c_error_pos_311[C.getFaceQubits(S, face, direction, 3)][j] *= -1;
+					}
+
+					if (p4 < p*4/15) { //purple Z
+						c_error_pos_311[C.getFaceQubits(S, face, direction, 0)][j] *= -1;
+					} else if (p*4/15 < p4 && p4 < p*8/15) {  //X
+						c_error_pos_311[C.getFaceQubits(S, face, direction, 1)][j] *= -1;
+						c_error_pos_311[C.getFaceQubits(S, face, direction, 2)][j] *= -1;
+						c_error_pos_311[C.getFaceQubits(S, face, direction, 3)][j] *= -1;
+					} else if (p*8/15 < p4 && p4 < p*12/15) { //Y
+						c_error_pos_311[C.getFaceQubits(S, face, direction, 0)][j] *= -1;
+						c_error_pos_311[C.getFaceQubits(S, face, direction, 1)][j] *= -1;
+						c_error_pos_311[C.getFaceQubits(S, face, direction, 2)][j] *= -1;
+						c_error_pos_311[C.getFaceQubits(S, face, direction, 3)][j] *= -1;
+					}
+
+					if (p5 < p*4/15) { //black2
+						c_error_pos_311[C.getFaceQubits(S, face, direction, 3)][divmod(j+1,3)] *= -1;
+					} else if (p*4/15 < p5 && p5 < p*8/15) { //X
+						c_error_pos_311[C.getFaceQubits(S, face, direction, 0)][j] *= -1;
+						c_error_pos_311[C.getFaceQubits(S, face, direction, 1)][j] *= -1;
+						c_error_pos_311[C.getFaceQubits(S, face, direction, 2)][j] *= -1;
+						c_error_pos_311[C.getFaceQubits(S, face, direction, 3)][j] *= -1;
+						c_error_pos_311[C.getFaceQubits(S, face, direction, 3)][divmod(j+1,3)] *= -1;
+					} else if (p*8/15 < p5 && p5 < p*12/15) { //Y
+						c_error_pos_311[C.getFaceQubits(S, face, direction, 0)][j] *= -1;
+						c_error_pos_311[C.getFaceQubits(S, face, direction, 1)][j] *= -1;
+						c_error_pos_311[C.getFaceQubits(S, face, direction, 2)][j] *= -1;
+						c_error_pos_311[C.getFaceQubits(S, face, direction, 3)][j] *= -1;
+					}
+
+					if (p6 < p*4/15) { //purple2
+						c_error_pos_311[C.getFaceQubits(S, face, direction, 2)][divmod(j+1,3)] *= -1;
+					} else if (p*4/15 < p6 && p6 < p*8/15) {
+						c_error_pos_311[C.getFaceQubits(S, face, direction, 0)][j] *= -1;
+						c_error_pos_311[C.getFaceQubits(S, face, direction, 1)][j] *= -1;
+						c_error_pos_311[C.getFaceQubits(S, face, direction, 2)][j] *= -1;
+						c_error_pos_311[C.getFaceQubits(S, face, direction, 3)][j] *= -1;
+						c_error_pos_311[C.getFaceQubits(S, face, direction, 2)][divmod(j+1,3)] *= -1;
+						c_error_pos_311[C.getFaceQubits(S, face, direction, 3)][divmod(j+1,3)] *= -1;
+					} else if (p*8/15 < p6 && p6 < p*12/15) {
+						c_error_pos_311[C.getFaceQubits(S, face, direction, 0)][j] *= -1;
+						c_error_pos_311[C.getFaceQubits(S, face, direction, 1)][j] *= -1;
+						c_error_pos_311[C.getFaceQubits(S, face, direction, 2)][j] *= -1;
+						c_error_pos_311[C.getFaceQubits(S, face, direction, 3)][j] *= -1;
+						c_error_pos_311[C.getFaceQubits(S, face, direction, 3)][divmod(j+1,3)] *= -1;
 					}
 					
 				}
@@ -236,10 +274,11 @@ void Cluster::addGateNoiseb(const double & p, const int& seed){
 		if (C.z == S.z - 1 || C.x == 0) {//remove boundary cubes
 			continue;
 		}
+		//////// process 1 ////////
 		for (int c = 0; c < S.x*S.y*S.z; c++) {
 			coord C(c,S);
-			for (int j = 0; j < 2; j++) {//311
-				int i = (j == 0) ? 0 : 2; //i taking 0 or 2
+			for (int i = 0; i < 2; i++) {//311, first two qubits
+				int j = (i == 1) ? 2 : 0;
 				for (int face = 0; face < 3; face ++) {
 					double p1 = dist(engine); //process 1 (black)
 					double p2 = dist(engine); //process 2 (pink)
@@ -247,42 +286,92 @@ void Cluster::addGateNoiseb(const double & p, const int& seed){
 					double p4 = dist(engine); //process 4 (purple)
 					
 					if (p1 < p*4/15) {
-						c_error_pos_311[C.getFaceQubits(S, face, 0, 3)][i] *= -1;//3
+						c_error_pos_311[C.getFaceQubits(S, face, 0, 3)][j] *= -1;//3
 					} else if (p*4/15 < p1 && p1 < p*8/15){
-						c_error_pos_311[C.getFaceQubits(S, face, 0, 0)][i] *= -1;//0
-						c_error_pos_311[C.getFaceQubits(S, face, 0, 1)][i] *= -1;//1
-						c_error_pos_311[C.getFaceQubits(S, face, 0, 2)][i] *= -1;//2
+						c_error_pos_311[C.getFaceQubits(S, face, 0, 0)][j] *= -1;//0
+						c_error_pos_311[C.getFaceQubits(S, face, 0, 1)][j] *= -1;//1
+						c_error_pos_311[C.getFaceQubits(S, face, 0, 2)][j] *= -1;//2
 					} else if (p*8/15 < p1 && p1 < p*12/15){
-						c_error_pos_311[C.getFaceQubits(S, face, 0, 0)][i] *= -1;//0
-						c_error_pos_311[C.getFaceQubits(S, face, 0, 1)][i] *= -1;//1
-						c_error_pos_311[C.getFaceQubits(S, face, 0, 2)][i] *= -1;//2
-						c_error_pos_311[C.getFaceQubits(S, face, 0, 3)][i] *= -1;//3
+						c_error_pos_311[C.getFaceQubits(S, face, 0, 0)][j] *= -1;//0
+						c_error_pos_311[C.getFaceQubits(S, face, 0, 1)][j] *= -1;//1
+						c_error_pos_311[C.getFaceQubits(S, face, 0, 2)][j] *= -1;//2
+						c_error_pos_311[C.getFaceQubits(S, face, 0, 3)][j] *= -1;//3
 					}
 					
 					if (p2 < p*4/15) {
-						c_error_pos_311[C.getFaceQubits(S, face, 0, 2)][i] *= -1;//2
+						c_error_pos_311[C.getFaceQubits(S, face, 0, 2)][j] *= -1;//2
 					} else if (p*4/15 < p2 && p2 < p*8/15) {
-						c_error_pos_311[C.getFaceQubits(S, face, 0, 0)][i] *= -1;//0
-						c_error_pos_311[C.getFaceQubits(S, face, 0, 1)][i] *= -1;//1
+						c_error_pos_311[C.getFaceQubits(S, face, 0, 0)][j] *= -1;//0
+						c_error_pos_311[C.getFaceQubits(S, face, 0, 1)][j] *= -1;//1
 					} else if (p*8/15 < p2 && p2 < p*12/15) {			
-						c_error_pos_311[C.getFaceQubits(S, face, 0, 0)][i] *= -1;//0
-						c_error_pos_311[C.getFaceQubits(S, face, 0, 1)][i] *= -1;//1
-						c_error_pos_311[C.getFaceQubits(S, face, 0, 2)][i] *= -1;//2	
+						c_error_pos_311[C.getFaceQubits(S, face, 0, 0)][j] *= -1;//0
+						c_error_pos_311[C.getFaceQubits(S, face, 0, 1)][j] *= -1;//1
+						c_error_pos_311[C.getFaceQubits(S, face, 0, 2)][j] *= -1;//2	
 					}
 					
 					if (p3 < p*4/15) {
-						c_error_pos_311[C.getFaceQubits(S, face, 0, 1)][i] *= -1;//1
+						c_error_pos_311[C.getFaceQubits(S, face, 0, 1)][j] *= -1;//1
 					} else if (p*4/15 < p3 && p3 < p*8/15){
-						c_error_pos_311[C.getFaceQubits(S, face, 0, 0)][i] *= -1;//0
+						c_error_pos_311[C.getFaceQubits(S, face, 0, 0)][j] *= -1;//0
 					} else if (p*8/15 < p3 && p3 < p*12/15){
-						c_error_pos_311[C.getFaceQubits(S, face, 0, 0)][i] *= -1;//0
-						c_error_pos_311[C.getFaceQubits(S, face, 0, 1)][i] *= -1;//1
+						c_error_pos_311[C.getFaceQubits(S, face, 0, 0)][j] *= -1;//0
+						c_error_pos_311[C.getFaceQubits(S, face, 0, 1)][j] *= -1;//1
 					}
 
 					if (p4 < p*8/15) { //purple
-						c_error_pos_311[C.getFaceQubits(S, face, 0, 0)][i] *= -1;//0
+						c_error_pos_311[C.getFaceQubits(S, face, 0, 0)][j] *= -1;//0
 					}
 				}
+			}
+		}
+		//////// process 2 ////////
+		for (int face = 0; face < 3; face ++) {
+			for (int direction = 0; direction < 2; direction++) {//horizontal/vertical
+				int j = direction ? 1 : 2;
+
+				double p1 = dist(engine); //process 1 (black)
+				double p2 = dist(engine); //process 2 (pink)
+				double p3 = dist(engine); //process 3 (rose)
+				double p4 = dist(engine); //process 4 (purple)
+				
+
+				if (p1 < p*8/15) { //black
+					c_error_pos_211[C.getFaceQubits(S, face, direction, 3)][j] *= -1;
+				}
+				
+				if (p2 < p*4/15) { //pink
+					c_error_pos_211[C.getFaceQubits(S, face, direction, 2)][j] *= -1;
+				} else if (p*4/15 < p2 && p2 < p*8/15) {
+					c_error_pos_211[C.getFaceQubits(S, face, direction, 3)][j] *= -1;
+				} else if (p*8/15 < p2 && p2 < p*12/15) {
+					c_error_pos_211[C.getFaceQubits(S, face, direction, 2)][j] *= -1;
+					c_error_pos_211[C.getFaceQubits(S, face, direction, 3)][j] *= -1;
+				}
+
+				if (p3 < p*4/15) { //rose
+					c_error_pos_211[C.getFaceQubits(S, face, direction, 1)][j] *= -1;
+				} else if (p*4/15 < p3 && p3 < p*8/15) {
+					c_error_pos_211[C.getFaceQubits(S, face, direction, 1)][j] *= -1;
+					c_error_pos_211[C.getFaceQubits(S, face, direction, 2)][j] *= -1;
+					c_error_pos_211[C.getFaceQubits(S, face, direction, 3)][j] *= -1;
+				} else if (p*8/15 < p3 && p3 < p*12/15) {
+					c_error_pos_211[C.getFaceQubits(S, face, direction, 2)][j] *= -1;
+					c_error_pos_211[C.getFaceQubits(S, face, direction, 3)][j] *= -1;
+				}
+
+				if (p4 < p*4/15) { //purple
+					c_error_pos_211[C.getFaceQubits(S, face, direction, 0)][j] *= -1;
+				} else if (p*4/15 < p4 && p4 < p*8/15) { //purple
+					c_error_pos_211[C.getFaceQubits(S, face, direction, 1)][j] *= -1;
+					c_error_pos_211[C.getFaceQubits(S, face, direction, 2)][j] *= -1;
+					c_error_pos_211[C.getFaceQubits(S, face, direction, 3)][j] *= -1;
+				} else if (p*8/15 < p4 && p4 < p*12/15) { //purple
+					c_error_pos_211[C.getFaceQubits(S, face, direction, 0)][j] *= -1;
+					c_error_pos_211[C.getFaceQubits(S, face, direction, 1)][j] *= -1;
+					c_error_pos_211[C.getFaceQubits(S, face, direction, 2)][j] *= -1;
+					c_error_pos_211[C.getFaceQubits(S, face, direction, 3)][j] *= -1;
+				}
+				
 			}
 		}
 	}
@@ -816,7 +905,7 @@ void testDecoding(Cluster& test_cluster, const double& p, const double& q, const
 		start_t = clock();
 	}
 	cout << "there" <<endl;
-	int parity = test_cluster.decodeWithMWPMLoss(verbosity, 1, 1, surf);
+	int parity = test_cluster.decodeWithMWPMLoss(verbosity, 1, surf);
 	
 	if (verbosity >= 1){
 		if (verbosity == 2) {
@@ -867,7 +956,7 @@ int loopDecoding(const int lmin, const int lmax, const int trials, const double 
 							} catch (...) {
 								continue;
 							}
-							if (surf == PLANE && test_cluster.decodeWithMWPMLoss(verbosity,make_corrections,0,surf) == 1) {
+							if (surf == PLANE && test_cluster.decodeWithMWPMLoss(verbosity,make_corrections,surf) == 1) {
 								num_correct ++; //correction successful
 							}
 						}
@@ -881,7 +970,7 @@ int loopDecoding(const int lmin, const int lmax, const int trials, const double 
 						} catch (...) {
 							continue;
 						}
-						if (surf == PLANE && test_cluster.decodeWithMWPMLoss(verbosity,make_corrections,0,surf) == 1) {
+						if (surf == PLANE && test_cluster.decodeWithMWPMLoss(verbosity,make_corrections,surf) == 1) {
 							num_correct ++; //correction successful
 						}
 					}

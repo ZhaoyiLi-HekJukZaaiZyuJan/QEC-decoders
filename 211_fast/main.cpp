@@ -142,19 +142,6 @@ void Cluster::addGateNoise(const double & p, const double & q, const int& seed){
 					if (p1 < p*8/15) { //black
 						c_error_pos_211[C.getFaceQubits(S, face, direction, 3)][i] *= -1;
 					}
-					if (p4 < p*4/15) { //purple
-						c_error_pos_211[C.getFaceQubits(S, face, direction, 0)][i] *= -1;
-					} else if (p*4/15 < p4 && p4 < p*8/15) { //purple
-						c_error_pos_211[C.getFaceQubits(S, face, direction, 1)][i] *= -1;
-						c_error_pos_211[C.getFaceQubits(S, face, direction, 2)][i] *= -1;
-						c_error_pos_211[C.getFaceQubits(S, face, direction, 3)][i] *= -1;
-					} else if (p*8/15 < p4 && p4 < p*12/15) { //purple
-						c_error_pos_211[C.getFaceQubits(S, face, direction, 0)][i] *= -1;
-						c_error_pos_211[C.getFaceQubits(S, face, direction, 1)][i] *= -1;
-						c_error_pos_211[C.getFaceQubits(S, face, direction, 2)][i] *= -1;
-						c_error_pos_211[C.getFaceQubits(S, face, direction, 3)][i] *= -1;
-					}
-					
 					
 					if (p2 < p*4/15) { //pink
 						c_error_pos_211[C.getFaceQubits(S, face, direction, 2)][i] *= -1;
@@ -172,6 +159,19 @@ void Cluster::addGateNoise(const double & p, const double & q, const int& seed){
 						c_error_pos_211[C.getFaceQubits(S, face, direction, 2)][i] *= -1;
 						c_error_pos_211[C.getFaceQubits(S, face, direction, 3)][i] *= -1;
 					} else if (p*8/15 < p3 && p3 < p*12/15) {
+						c_error_pos_211[C.getFaceQubits(S, face, direction, 2)][i] *= -1;
+						c_error_pos_211[C.getFaceQubits(S, face, direction, 3)][i] *= -1;
+					}
+
+					if (p4 < p*4/15) { //purple
+						c_error_pos_211[C.getFaceQubits(S, face, direction, 0)][i] *= -1;
+					} else if (p*4/15 < p4 && p4 < p*8/15) { //purple
+						c_error_pos_211[C.getFaceQubits(S, face, direction, 1)][i] *= -1;
+						c_error_pos_211[C.getFaceQubits(S, face, direction, 2)][i] *= -1;
+						c_error_pos_211[C.getFaceQubits(S, face, direction, 3)][i] *= -1;
+					} else if (p*8/15 < p4 && p4 < p*12/15) { //purple
+						c_error_pos_211[C.getFaceQubits(S, face, direction, 0)][i] *= -1;
+						c_error_pos_211[C.getFaceQubits(S, face, direction, 1)][i] *= -1;
 						c_error_pos_211[C.getFaceQubits(S, face, direction, 2)][i] *= -1;
 						c_error_pos_211[C.getFaceQubits(S, face, direction, 3)][i] *= -1;
 					}
