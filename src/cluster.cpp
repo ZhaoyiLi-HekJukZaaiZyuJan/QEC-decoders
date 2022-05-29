@@ -59,8 +59,10 @@ void cluster::addPauli(const double & p1, const double & p2, const int& seed){
 	for (int c = 0; c < 3*S.x*S.y*S.z; c++) {
 		coord C(c, S);
 		if(this_surf == PLANE && ((C.l == 1 && (C.y == S.y - 1 || C.x == 0)) ||(C.l == 2 && (C.z == S.z - 1 || C.x == 0)))){
-			c_error_pos[c] = 1;
-		}//	for planar code, remove errors on left, more, and lower boundaries to create edges.
+			c_error_pos[c] = 1; //	for planar code, remove errors on left, more, and lower boundaries to create edges.
+		} if(this_surf == TORUS && C.l == 2 && C.z == S.z - 1){
+			c_error_pos[c] = 1;	//	for planar code, remove time like errors on left, more, and lower boundaries to create edges.
+		}
 	}
 }
 //differentiate correlated and uncorrelated errors
@@ -593,7 +595,7 @@ void cluster::printSuperChunks(){
 	}
 }
 
-void cluster::surfaceCorrect(PerfectMatching* pm, const int& vertices_num, const vector<int>& vertexPosition, const vector<int>& boundary_nodes, const int& verbose){
+void cluster::surfaceCorrect(PerfectMatching* pm, const int& vertices_num, const vector<int>& vertexPosition, const vector<int>& boundary_nodes, const int& verbose, const surfacetype& s){
 	//Find the error operator of each pair.
 	vector<int> error_op_Z_pos; //correction operator not reduced
 	vector<int> matchPosition; //matching vertex of vertexPosition respectively
@@ -607,7 +609,7 @@ void cluster::surfaceCorrect(PerfectMatching* pm, const int& vertices_num, const
 			matchPosition.push_back(bc);
 			if (count(matchPosition.begin(), matchPosition.end(), ac)) continue; //Prevent recounting of vertices
 			bVertex = vertex(bc, S);
-			relative_pos = getTaxicabDisplacement(S, ac, bc, PLANE);
+			relative_pos = getTaxicabDisplacement(S, ac, bc, s);
 		}else{ // matched to boundary
 			matchPosition.push_back(0);
 			relative_pos = {boundary_nodes[i], 0, 0, 0};
@@ -635,7 +637,13 @@ void cluster::surfaceCorrect(PerfectMatching* pm, const int& vertices_num, const
 					error_op_Z_pos.push_back(coord(coord(n,S).x, divmod(coord(n,S).y + i, S.y), 0, 1).hash(S));
 				}
 			}
-
+			cout << "this vertex:" << coord(ac,S) << endl; 
+			cout << "match vertex:" << coord(vertexPosition[pm->GetMatch(i)],S) << endl; 
+			cout << "this vertex op:";
+			for (int i = 0 ; i <error_op_Z_pos.size(); i++) {
+				cout << coord(error_op_Z_pos[i],S) << " ";
+			}
+			cout << endl;
 	}
 
 	for (int i = 0; i < error_op_Z_pos.size(); i++) {
@@ -647,8 +655,10 @@ void cluster::surfaceCorrect(PerfectMatching* pm, const int& vertices_num, const
 		for (int i = 0 ; i < vertices_num; i++) {
 			cout << coord(vertexPosition[i],S)<< "/";
 			cout << coord(matchPosition[i],S)<<"/";
-			cout << boundary_nodes[i] << "/";
-			cout << getTaxicabDistance(S,coord(vertexPosition[i],S),coord(matchPosition[i],S),PLANE) << endl;
+			if (s == PLANE){
+				cout << boundary_nodes[i] << "/";
+			}	
+			cout << getTaxicabDistance(S,coord(vertexPosition[i],S),coord(matchPosition[i],S),s) << endl;
 		}
 		cout << "errorOps: " << endl;
 		for (int i = 0 ; i <error_op_Z_pos.size(); i++) {
@@ -705,7 +715,7 @@ void cluster::surfaceCorrectLoss(PerfectMatching* pm, const int& vertices_num, c
 				for(int i =0; i < abs(relative_pos.y); i++){
 					error_op_Z_pos.push_back(coord(coord(n,S).x, divmod(coord(n,S).y + i, S.y), 0, 1).hash(S));
 				}
-			}
+			}			
 	
 		}
 	
@@ -743,7 +753,6 @@ int cluster::decodeWithMWPM(int verbosity, bool make_corrections, surfacetype su
     }
 	
 	int vertices_num = vertexPosition.size(), matches_num, edges_num;
-
 	if (this_surf == TORUS) {
 		matches_num = vertices_num;
 		edges_num = vertices_num * (vertices_num - 1)/2;
@@ -782,19 +791,17 @@ int cluster::decodeWithMWPM(int verbosity, bool make_corrections, surfacetype su
 			}
         }
     }
-
 	//solve the graph using MWPM decoder
 	pm->Solve();
 	
 	//surface correction
 	if (make_corrections) {
-		surfaceCorrect(pm, vertices_num, vertexPosition, boundary_nodes, verbosity);///debug
+		surfaceCorrect(pm, vertices_num, vertexPosition, boundary_nodes, verbosity, surf);///debug
 	}
 	
 	//alternative check
 	int parity = 1;
 
-	vector<int> matchPosition; //matching vertex of vertexPosition respectively
 	for (int i = 0; i < vertices_num; i++) {
 		if (this_surf == PLANE){
 			if (pm->GetMatch(i) == i + vertices_num && boundary_nodes[i] > 0) { //matched to right boundary
@@ -804,10 +811,9 @@ int cluster::decodeWithMWPM(int verbosity, bool make_corrections, surfacetype su
 			int aC = vertexPosition[i];
 			int bC = vertexPosition[pm->GetMatch(i)];// position of vertexa's match, vertexb
 
-			matchPosition.push_back(bC);
 			int x1 = aC % S.x;
 			int x2 = bC % S.x;
-			if (!((2*abs(x1 - x2) > S.x && x1 < x2))){ //crossed boundary
+			if ((2*abs(x1 - x2) > S.x && x1 < x2)){ //crossed boundary
 				parity *= -1;
 			}
 		}

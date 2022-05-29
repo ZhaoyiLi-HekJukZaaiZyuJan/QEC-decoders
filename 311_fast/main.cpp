@@ -601,7 +601,6 @@ void Cluster::addBiasedGateNoise2(const double & p, const double & B, const int&
 					c_error_pos_311[C.getFaceQubits(S, face, 0, 2)][divmod(i,3)] *= -1;
 				}
 				if (p2x < p*2/3/B) {
-					cout << "here" << endl;
 					c_error_pos_311[C.getFaceQubits(S, face, 0, 2)][divmod(i,3)] *= -1;
 					c_error_pos_311[C.getFaceQubits(S, face, 0, 3)][divmod(i,3)] *= -1;
 					c_error_pos_311[C.getFaceQubits(S, face, 0, 3)][divmod(i+1,3)] *= -1;
@@ -611,8 +610,7 @@ void Cluster::addBiasedGateNoise2(const double & p, const double & B, const int&
 				if (p3z < p*2/3) { //rose
 					c_error_pos_311[C.getFaceQubits(S, face, 0, 1)][divmod(i,3)] *= -1;
 				}
-				if (p3x < p*2/3/B) {
-					cout << "here" << endl;
+				if (p3x < p*2/3/B) {}
 					c_error_pos_311[C.getFaceQubits(S, face, 0, 1)][divmod(i+1,3)] *= -1;
 					c_error_pos_311[C.getFaceQubits(S, face, 0, 1)][divmod(i+2,3)] *= -1;
 					c_error_pos_311[C.getFaceQubits(S, face, 0, 0)][divmod(i,3)] *= -1;

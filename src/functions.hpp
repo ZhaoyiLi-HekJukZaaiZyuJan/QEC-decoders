@@ -20,6 +20,11 @@ string To_string(surfacetype&);
 ostream& operator<< (ostream&, surfacetype&);
 
 //===================================================================//
+istream& operator>> (istream&, concattype&);
+string To_string(concattype&);
+ostream& operator<< (ostream&, concattype&);
+
+//===================================================================//
 
 istream& operator>> (istream&, lossmodel&);
 string To_string(lossmodel&);

@@ -28,22 +28,26 @@ clock_t start_t = clock();
 auto start = chrono::steady_clock::now();
 
 
-void testDecoding(cluster& test_cluster, const double& p, const double& pl, const int& seed, surfacetype surf, noisemodel N, lossmodel L, int verbose){
+void testDecoding(cluster& test_cluster, const double& p, const double& q, const int& seed, surfacetype surf, noisemodel N, lossmodel L, int verbose){
 	start_t = clock();
 	//add noise
-	test_cluster.addNoise(p, pl, N, L, seed);
+	test_cluster.addNoise(p, q, N, L, seed);
 	cout << "t(Generation):"<< double(clock()-start_t)/CLOCKS_PER_SEC << endl;//timing
 	start_t = clock();
-	try {
-		test_cluster.getSuperChunks();
-	} catch (...) {
-		cout << "failure" << endl;
-		return;
+	if (L != OFF_loss){
+		try {
+			test_cluster.getSuperChunks();
+		} catch (...) {
+			cout << "failure" << endl;
+			return;
+		}
 	}
 	
 	if (verbose >= 1){
 		if (verbose == 2) {
-			test_cluster.printSuperChunks();
+			if (L != OFF_loss){
+				test_cluster.printSuperChunks();
+			}
 			test_cluster.printPrimal(surf);
 			test_cluster.getSurf();//decode
 			test_cluster.printSurf();//decode
@@ -51,7 +55,7 @@ void testDecoding(cluster& test_cluster, const double& p, const double& pl, cons
 		cout << "t(getSuperChunks):" << double(clock()-start_t)/CLOCKS_PER_SEC << endl;//timing
 		start_t = clock();
 	}
-	int parity = test_cluster.decodeWithMWPMLoss(verbose, 1, surf);
+	int parity = test_cluster.decodeWithMWPM(verbose, 1, surf);
 
 	if (verbose >= 1){
 		if (verbose == 2) {
@@ -93,7 +97,7 @@ int loopDecoding(const int lmin, const int lmax, const int trials, const double 
 							cluster test_cluster({l,l,l,0}, surf);
 							for(int i = start; i < end; ++i){
 								test_cluster.addNoise(p, q, N, L);	
-								if (surf == PLANE && test_cluster.decodeWithMWPM(verbose,0,surf) == 1) {
+								if (test_cluster.decodeWithMWPM(verbose,0,surf) == 1) {
 									num_correct ++; //correction successful
 								}
 							}
@@ -101,7 +105,7 @@ int loopDecoding(const int lmin, const int lmax, const int trials, const double 
 					} else {
 						for(int i = 0; i < trials; ++i){
 							test_cluster.addNoise(p, q, N, L);
-							if (surf == PLANE && test_cluster.decodeWithMWPM(verbose,0,surf) == 1) {
+							if (test_cluster.decodeWithMWPM(verbose,0,surf) == 1) {
 								num_correct ++; //correction successful
 							}
 						}
@@ -117,7 +121,7 @@ int loopDecoding(const int lmin, const int lmax, const int trials, const double 
 								} catch (...) {
 									continue;
 								}
-								if (surf == PLANE && test_cluster.decodeWithMWPMLoss(verbose,0,surf) == 1) {
+								if (test_cluster.decodeWithMWPMLoss(verbose,0,surf) == 1) {
 									num_correct ++; //correction successful
 								}
 							}
@@ -130,7 +134,7 @@ int loopDecoding(const int lmin, const int lmax, const int trials, const double 
 							} catch (...) {
 								continue;
 							}
-							if (surf == PLANE && test_cluster.decodeWithMWPMLoss(verbose,0,surf) == 1) {
+							if (test_cluster.decodeWithMWPMLoss(verbose,0,surf) == 1) {
 								num_correct ++; //correction successful
 							}
 						}
@@ -210,6 +214,7 @@ int main(int argc, const char *argv[]) {
 	cout << "pmin:" << pmin << ";pmax:" << pmax << ";nP:" << Np << endl;
 	cout << "qmin:" << qmin << ";qmax:" << qmax << ";nPl:" << Nq << endl;
 	cout << "n:" << n << "seed:" << seed << ";thread:" << thread << endl;
+	cout << "s:" << s << endl;
 	cout << "noise model:" << N << ";loss model:" << L <<endl;
 	
 	
@@ -240,12 +245,14 @@ int main(int argc, const char *argv[]) {
 //./simulate -s PLANE --qmin 0 --qmax 0 --pmin 0.05 --pmax 0.1  --Np 20 --Nq 1 -n 1000 --lmin 3 -v 1 -N INDEP_211
 //### INDEP run: (*p_th = 3%*)
 ///./simulate -s PLANE --qmin 0 --qmax 0 --pmin 0.02 --pmax 0.05  --Np 20 --Nq 1 -n 1000 --lmin 3 --lmax 17 -v 1 -N INDEP
-//### GATE:      (*p_th = 0.585, 0.65 verified: 53018107%*)
-//### GATE_full: (*p_th = 0.585, 0.65 verified: 53018107%*)
-//### EM2:       (*p_th = 0.572, 0.59 verified: 53112898%*)
+//### GATE:      (*p_th = 0.585%, 6.5% verified: 53018107%*)
+//### GATE_full: (*p_th = 0.591%, 7.6% verified: 14348%*)
+//### EM2:       (*PLANE: p_th = 0.572%, 5.9% verified: 53112898%*)
+//				 (*TORUS:  *)
+//./simulate -s TORUS --qmin 0 --qmax 0 --pmin 0 --pmax 0.009  --Np 20 --Nq 1 -n 10000 --lmin 3 --lmax 17 -v 1 -N EM2
 //### EM2_full: 
 //./simulate -s PLANE --qmin 0 --qmax 0 --pmin 0 --pmax 0.009  --Np 20 --Nq 1 -n 10000 --lmin 3 --lmax 17 -v 1 -N GATE
-//./simulate -s PLANE --qmin 0 --qmax 0 --pmin 0 --pmax 0.009  --Np 20 --Nq 1 -n 10000 --lmin 3 --lmax 17 -v 1 -N EM2
+
 //### GATE_biased run \beta = 1000 (*p_ref = 0.74% ArXiv 1308.4776 *)
 //./simulate -s PLANE --qmin 1000 --pmin 0.005 --pmax 0.01  --Np 30 --Nq 1 -n 10000 --lmin 3 --lmax 21 -v 1 -N GATE_biased
 

@@ -306,7 +306,7 @@ void testDecoding(const int L, const int M, const double p, subsurfacetype surf=
 	testcluster.printQubit();
 	
 
-	cout << testcluster.decodeWithMWPM(1);
+	cout << testcluster.decodeWithMWPM(1) << endl;
 
 }
 

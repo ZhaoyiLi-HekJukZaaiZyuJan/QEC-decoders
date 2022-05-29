@@ -46,7 +46,7 @@ class cluster {
 	vector<int> surf;///decode
 	void getSurf();///decode
 	void printSurf();///decode
-	void surfaceCorrect(PerfectMatching*, const int&, const vector<int>&, const vector<int>&, const int& verbose = 0);
+	void surfaceCorrect(PerfectMatching*, const int&, const vector<int>&, const vector<int>&, const int& verbose, const surfacetype&);
 	void surfaceCorrectLoss(PerfectMatching*, const int&, const vector<int>&, const vector<int>&, const int&, const surfacetype&);///decode
 	
 	int checkMeasurementOutcomeX1();
