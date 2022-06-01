@@ -13,11 +13,11 @@ module load gcc/10.1.0
 ### GATE run: (*p_th = 0.7%*)
 ##./simulate -s PLANE -N GATE --pmin 0.006 --pmax 0.01 --Np 30 --Npl 1 -n 1000 --Lmin 3 --Lmax 21 -v 1 --fname "/scratch/users/ladmon/311/results/${SLURM_ARRAY_JOB_ID}_$SLURM_ARRAY_TASK_ID.out"
 
-### INDEP run: (*p_th = 8%*)
- #./simulate -s PLANE -N INDEP --plmin 0 --plmax 0 --pmin 0.06 --pmax 0.09  --Np 10 --Npl 1 -n 1000 --Lmin 3 --Lmax 17 -v 1 --fname "/scratch/users/ladmon/311/results/${SLURM_ARRAY_JOB_ID}_$SLURM_ARRAY_TASK_ID.out"
+### INDEP run: (*p_th ~ 10.3%*)
+./simulate -s PLANE ./simulate -N INDEP -n 10000 --pmin 0.03 --pmax 0.9 --lmin 3 --Np 30 -v 1 -c concat311b --fname "/scratch/users/ladmon/311/results/${SLURM_ARRAY_JOB_ID}_$SLURM_ARRAY_TASK_ID.out"
 
 ### GATE_biased run: (*p_th \approx 1.4%*)
- ./simulate --qmin 100 --pmin 0.01 --pmax 0.016 --Np 30 --Nq 1 -n 1000 --lmin 3 --lmax 21 -v 1 -N GATE_biased
+ #./simulate --qmin 100 --pmin 0.01 --pmax 0.016 --Np 30 --Nq 1 -n 1000 --lmin 3 --lmax 21 -v 1 -N GATE_biased
 
 echo "----------------------------------"
 echo "id:" "$SLURM_ARRAY_JOB_ID"

@@ -179,6 +179,9 @@ void cluster::addFullGateNoise(const double & p, const int& seed=0){
 	//////// CZ gates ////////
 	for (int c = 0; c < S.x*S.y*S.z; c++) {
 		coord C(c,S);
+		if (C.z == S.z - 1 || C.y == S.y - 1) {//remove boundary cubes
+			continue;
+		}
 		for (int face = 0; face < 3; face++) {
 			double p1 = dist(engine); //process 1 (black)
 			double p2 = dist(engine); //process 2 (pink)

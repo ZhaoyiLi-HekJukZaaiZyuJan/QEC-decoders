@@ -32,7 +32,7 @@ class Cluster : public cluster {
 	vector<vector<int>> c_error_pos_311;
 	public:
 	void addPauli311(const double&, const double&, const int&);
-	void addNoise(const double&, const double&, const noisemodel, const lossmodel, const int& seed = 0);
+	void addNoise(const double&, const double&, const noisemodel, const lossmodel, const concattype, const int& seed);
 	void addGateNoisea(const double&, const int& seed=0);
 	void addGateNoiseb(const double&, const int& seed=0);
 	void addBiasedGateNoise1(const double &, const double &, const int& seed=0);
@@ -610,7 +610,7 @@ void Cluster::addBiasedGateNoise2(const double & p, const double & B, const int&
 				if (p3z < p*2/3) { //rose
 					c_error_pos_311[C.getFaceQubits(S, face, 0, 1)][divmod(i,3)] *= -1;
 				}
-				if (p3x < p*2/3/B) {}
+				if (p3x < p*2/3/B) {
 					c_error_pos_311[C.getFaceQubits(S, face, 0, 1)][divmod(i+1,3)] *= -1;
 					c_error_pos_311[C.getFaceQubits(S, face, 0, 1)][divmod(i+2,3)] *= -1;
 					c_error_pos_311[C.getFaceQubits(S, face, 0, 0)][divmod(i,3)] *= -1;
@@ -724,9 +724,13 @@ void Cluster::addBiasedGateNoise2(const double & p, const double & B, const int&
 
 
 //No seed used for seed = 0
-void Cluster::addNoise(const double & p, const double & q, const noisemodel N, const lossmodel L, const int& seed){
+void Cluster::addNoise(const double & p, const double & q, const noisemodel N, const lossmodel L, const concattype conc, const int& seed){
 	if (N == GATE) { //p:error probability, //q: bias
-		addGateNoisea(p, seed);
+		if (conc == concat311a){
+			addGateNoisea(p, seed);
+		} else if (conc == concat311b){
+			addGateNoiseb(p, seed);
+		}
 	}
 	if (N == GATE_biased) { //p:error probability, //q: bias
 		addBiasedGateNoise2(p, q, seed);
@@ -874,10 +878,10 @@ void Cluster::printQubit(surfacetype s = PLANE){
 	
 }
 
-void testDecoding(Cluster& test_cluster, const double& p, const double& q, const int& seed, surfacetype surf, noisemodel N, lossmodel L, int verbosity = 0){
+void testDecoding(Cluster& test_cluster, const double& p, const double& q, const int& seed, surfacetype surf, concattype conc, noisemodel N, lossmodel L, int verbosity = 0){
 	start_t = clock();
 	//add noise
-	test_cluster.addNoise(p, q, N, L, seed);
+	test_cluster.addNoise(p, q, N, L, conc, seed);
 	test_cluster.decode311a(0);
 	// test_cluster.addError();
 	
@@ -918,7 +922,7 @@ void testDecoding(Cluster& test_cluster, const double& p, const double& q, const
 	cout << "X1 check:" << parity <<endl;
 }
 
-int loopDecoding(const int lmin, const int lmax, const int trials, const double pmin, const double pmax, const int Np, const double qmin, const double qmax, const int Nq, const string fname, surfacetype surf, noisemodel N, lossmodel L, bool out, int verbosity = 0, int thread = 0, bool make_corrections = 0){
+int loopDecoding(const int lmin, const int lmax, const int trials, const double pmin, const double pmax, const int Np, const double qmin, const double qmax, const int Nq, const string fname, surfacetype surf, concattype conc, noisemodel N, lossmodel L, bool out, int verbosity = 0, int thread = 0, bool make_corrections = 0){
 	cout << "hardware_concurrency" << thread::hardware_concurrency() <<endl;
 	ofstream outfile;
 	if(out != 0){
@@ -947,8 +951,12 @@ int loopDecoding(const int lmin, const int lmax, const int trials, const double 
 					parallel_for(trials, [&](int start, int end){
 						Cluster test_cluster({l,l,l,0}, surf);
 						for(int k = start; k < end; ++k){
-							test_cluster.addNoise(p,q, N,L, 0);
-							test_cluster.decode311a(0);
+							test_cluster.addNoise(p,q, N, L, conc, 0);
+							if(conc == concat311a){
+								test_cluster.decode311a(0);
+							} else if(conc == concat311b){
+								test_cluster.decode311b(0);
+							}
 							try {
 								test_cluster.getSuperChunks();
 							} catch (...) {
@@ -961,8 +969,12 @@ int loopDecoding(const int lmin, const int lmax, const int trials, const double 
 					});
 				} else {
 					for(int k = 0; k < trials; ++k){
-						test_cluster.addNoise(p,q, N,L, 0);
-						test_cluster.decode311a(0);
+						test_cluster.addNoise(p,q, N,L,conc, 0);
+						if(conc == concat311a){
+								test_cluster.decode311a(0);
+							} else if(conc == concat311b){
+								test_cluster.decode311b(0);
+							}
 						try {
 							test_cluster.getSuperChunks();
 						} catch (...) {
@@ -1002,6 +1014,7 @@ int main(int argc, const char *argv[]) {
 	cout << "hardware_concurrency" << thread::hardware_concurrency() <<endl;
 	string fname;
 	surfacetype s;
+	concattype c;
 	noisemodel N;
 	lossmodel L;
 	bool test, use_env, thread, make_corrections, out;
@@ -1018,6 +1031,7 @@ int main(int argc, const char *argv[]) {
 	("fname", "filename", cxxopts::value(fname)->default_value(""))
 	("out", "output in this directory as an .out file", cxxopts::value(out)->default_value("0"))
 	("s", "surface type", cxxopts::value(s)->default_value("PLANE"))
+	("c", "concatenation type", cxxopts::value(c)->default_value("concat311a"))
 	("lmin", "Minimal size of mesh", cxxopts::value(lmin)->default_value("3"))
 	("lmax", "Maximal size of mesh", cxxopts::value(lmax)->default_value("17"))
 	("n", "Number of trials", cxxopts::value(n)->default_value("100"))
@@ -1051,7 +1065,8 @@ int main(int argc, const char *argv[]) {
 	cout << "Pmin:" << pmin << ";Pmax:" << pmax << ";nP" << Np << endl;
 	cout << "qmin:" << qmin << ";qmax:" << qmax << ";Nq" << Nq << endl;
 	cout << "n:" << n << ";seed:" << seed << ";thread" << thread << endl;
-	cout << "N:" << N << ";verbosity:" << verbosity << "L;" << L << endl;
+	cout << "c:" << c << ";s:" << s << endl;
+	cout << "N:" << N << ";verbosity:" << verbosity << ";L:" << L << endl;
 	
 	
 	if (fname == "") {
@@ -1061,12 +1076,12 @@ int main(int argc, const char *argv[]) {
 		Cluster test_cluster({lmin,lmin,lmin,0}, s);
 		int i = 0;
 		do {
-			testDecoding(test_cluster, pmin, qmin, seed, s, N, L, verbosity);
+			testDecoding(test_cluster, pmin, qmin, seed, s, c, N, L, verbosity);
 			i++;
 		}
 		while (i < times);
 	} else{
-		return_value = loopDecoding(lmin, lmax, n, pmin, pmax, Np-1, qmin, qmax, Nq-1, fname, s, N, L, out, verbosity, thread, make_corrections);
+		return_value = loopDecoding(lmin, lmax, n, pmin, pmax, Np-1, qmin, qmax, Nq-1, fname, s, c, N, L, out, verbosity, thread, make_corrections);
 	}
 	return return_value;
 }
@@ -1075,9 +1090,10 @@ int main(int argc, const char *argv[]) {
 ///######## 1D run ########
 
 //### INDEP run:
-	//(INDEP)  ###(p_th ~0.103)
-		///./simulate -N INDEP -n 10000 --pmin 0.06 --pmax 0.12 --lmin 3 --Np 30 -v 1
-	//(GATE) ###(p_th ~0.008?)
+	//(INDEP)  ### 311a (p_th ~0.)
+		///./simulate -N INDEP -n 10000 --pmin 0.07 --pmax 0.13 --lmin 3 --Np 30 -v 1
+	//(INDEP)  ### 311b (p_th ~0.)
+	//(GATE) ###(p_th ~?)
 		///./simulate -N GATE -n 1000 --pmin 0.09 --pmax 0.012 --lmin 3 -v 1
 	//(GATE_biased (1)) run \beta = 1000 (*p_ref = 1.37% ArXiv 1308.4776 *)
 		///./simulate --qmin 1000 --pmin 0.01 --pmax 0.016 --Np 30 --Nq 1 -n 10000 --lmin 3 --lmax 21 -v 1 -N GATE_biased

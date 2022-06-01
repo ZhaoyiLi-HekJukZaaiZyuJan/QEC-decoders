@@ -219,7 +219,7 @@ int main(int argc, const char *argv[]) {
 	
 	
 	if (fname == "") {
-		fname = "l=" + to_string(lmin) + ",p=(" + to_string(pmin).substr(3,2) + "," + to_string(pmax).substr(3,2) + "),n=" +to_string(n) + To_string(s) + "," + To_string(N) + ".out";
+		fname = "l=" + to_string(lmin) + ",p=(" + to_string(pmin).substr(3,2) + "," + to_string(pmax).substr(3,2) + "),n=" +to_string(n) + to_string(s) + "," + to_string(N) + ".out";
 	}
 	
 	if (test) {

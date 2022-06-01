@@ -38,9 +38,15 @@ ostream& operator<< (ostream& os,surfacetype & surf){
 istream& operator>> (istream& is, concattype& concat){
 	string str;
 	is >> str;
+	if (str == "concat311a") concat = concat311a;
+	else if (str == "concat311b") concat = concat311b;
+	else;
 	return is;
 }
 string To_string(concattype& concat){
+	if (concat == concat311a) return "concat311a";
+	else if (concat == concat311b) return "concat311b";
+	else;
 	return "";
 }
 
@@ -186,7 +192,7 @@ int getTaxicabDistance(const coord& S, const int& c1, const int& c2, const surfa
 		coord C1(c1,S);
 		coord C2(c2,S);
 		return abs(C1.x - C2.x) + abs(C1.y - C2.y) + abs(C1.z - C2.z);
-	}	
+	} else return INT_MAX;
 }
 
 int getTaxicabDistance(const coord& S, const coord& C1, const coord& C2, const surfacetype& surf){  // compute taxicab distance between two coords
@@ -195,7 +201,7 @@ int getTaxicabDistance(const coord& S, const coord& C1, const coord& C2, const s
 		return min(abs(C1.x - C2.x), M-abs(C1.x - C2.x)) + min(abs(C1.y - C2.y), L-abs(C1.y - C2.y)) + abs(C1.z - C2.z);
 	} else if (surf == PLANE){
 		return abs(C1.x - C2.x) + abs(C1.y - C2.y) + abs(C1.z - C2.z);
-	}	
+	} else return INT_MAX; 
 }
 
 int getTaxicabDistanceChunks(const coord& S, const vector<int>& chunk1, const vector<int>& chunk2, const surfacetype& surf){  // compute taxicab distance between two coords
