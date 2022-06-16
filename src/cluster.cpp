@@ -135,6 +135,9 @@ void cluster::addGateNoise(const double & p, const int& seed=0){
 	//////// CZ gates //////// 
 	for (int c = 0; c < S.x*S.y*S.z; c++) {
 		coord C(c,S);
+		if (C.z == S.z - 1 || C.y == S.y - 1) {//remove boundary cubes
+			continue;
+		}
 		for (int face = 0; face < 3; face++) {
 			for (int dir = 0; dir < 2; dir ++) {//verticle/horizontal
 				double p1 = dist(engine);
