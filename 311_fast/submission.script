@@ -8,23 +8,14 @@
 #SBATCH --array=1-100         # Array range
 
 module load gcc/10.1.0
+# srun ./simulate -s PLANE --plmin 0 --plmax 0.25 --pmin 0 --pmax 0.033  --Np 20 --Npl 20 -n 100 --Lmin 3 -v 1 -N INDEP --Nl INDEP_loss --fname "results/${SLURM_ARRAY_JOB_ID}_$SLURM_ARRAY_TASK_ID.out" --thread 1
 
+
+##./simulate -s PLANE -N GATE --pmin 0.006 --pmax 0.01 --Np 30 --Npl 1 -n 1000 --Lmin 3 --Lmax 21 -v 1 --fname "/scratch/users/ladmon/311/results/${SLURM_ARRAY_JOB_ID}_$SLURM_ARRAY_TASK_ID.out"
 ./simulate -s PLANE ./simulate -N INDEP -n 10000 --pmin 0.03 --pmax 0.09 --lmin 3 --Np 30 -v 1 -c concat311b --fname "/scratch/users/ladmon/311/results/${SLURM_ARRAY_JOB_ID}_$SLURM_ARRAY_TASK_ID.out"
 
-#  //### GATE run: (*p_th = 0.7%*)
 
-# //### INDEP run:
-# 	//(INDEP)  ### 311a (p_th 5.65% 56198801)
-# 		///./simulate -N INDEP -n 10000 --pmin 0.07 --pmax 0.13 --lmin 3 --Np 30 -v 1
-# 	//(INDEP)  ### 311b (p_th 10.20(3 54447916))
-# 	//(GATE)   ### 311a (p_th ~ (0.325%, 3.4%) 56178855)
-# 		///./simulate -N GATE -n 1000 --pmin 0 --pmax 0.005 --lmin 3 --Np 30 -v 1
-# 		//     ### 311b 
-# 	//(GATE_biased (1)) run \beta = 1000 (*p_ref = 1.37% ArXiv 1308.4776 *)
-# 		///./simulate --qmin 1000 --pmin 0.01 --pmax 0.016 --Np 30 --Nq 1 -n 10000 --lmin 3 --lmax 21 -v 1 -N GATE_biased
-
-# //######## test ########
-# 	///./simulate -N INDEP -n 10000 --pmin 0.06 --pmax 0.09 --lmin 3 -v 1 --test ###(pE ~0.8)
+ #./simulate --qmin 100 --pmin 0.01 --pmax 0.016 --Np 30 --Nq 1 -n 1000 --lmin 3 --lmax 21 -v 1 -N GATE_biased
 
 echo "----------------------------------"
 echo "id:" "$SLURM_ARRAY_JOB_ID"
