@@ -126,7 +126,9 @@ void Cluster::addGateNoise(const double & p, const double & q, const int& seed){
 	
 	for (int c = 0; c < S.x*S.y*S.z; c++) {
 		coord C(c,S);
-		if (C.z == S.z - 1 || C.y == S.y - 1) {//remove boundary cubes
+		if (this_surf == PLANE && (C.z == S.z - 1 || C.y == S.y - 1)) {//remove boundary cubes
+			continue;
+		} if (this_surf == TORUS && C.z == S.z - 1){
 			continue;
 		}
 		for (int i = 0; i < 2; i++) {//211
@@ -139,49 +141,47 @@ void Cluster::addGateNoise(const double & p, const double & q, const int& seed){
 					double p4 = dist(engine); //process 4 (purple)
 					
 
-					if (p1 < p*8/15) { //black
+					if (p1 < p*4/15) { //black
 						c_error_pos_211[C.getFaceQubits(S, face, direction, 3)][i] *= -1;
 					}
-					// else if (p*4/15 < p1 && p1 < p*8/15) {
-					// 	c_error_pos_211[C.getFaceQubits(S, face, direction, 3)][i] *= -1;
-					// } 
+					else if (p*4/15 < p1 && p1 < p*8/15) {
+						c_error_pos_211[C.getFaceQubits(S, face, direction, 3)][i] *= -1;
+					} 
 					
-					if (p2 < p*8/15) { //pink
+					if (p2 < p*4/15) { //pink
 						c_error_pos_211[C.getFaceQubits(S, face, direction, 2)][i] *= -1;
 					} 
-					// else if (p*4/15 < p2 && p2 < p*8/15) {
-					// 	c_error_pos_211[C.getFaceQubits(S, face, direction, 3)][i] *= -1;
-					// } else if (p*8/15 < p2 && p2 < p*12/15) {
-					// 	c_error_pos_211[C.getFaceQubits(S, face, direction, 2)][i] *= -1;
-					// 	c_error_pos_211[C.getFaceQubits(S, face, direction, 3)][i] *= -1;
-					// }
+					else if (p*4/15 < p2 && p2 < p*8/15) {
+						c_error_pos_211[C.getFaceQubits(S, face, direction, 3)][i] *= -1;
+					} else if (p*8/15 < p2 && p2 < p*12/15) {
+						c_error_pos_211[C.getFaceQubits(S, face, direction, 2)][i] *= -1;
+						c_error_pos_211[C.getFaceQubits(S, face, direction, 3)][i] *= -1;
+					}
 
-					if (p3 < p*8/15) { //rose
+					if (p3 < p*4/15) { //rose
 						c_error_pos_211[C.getFaceQubits(S, face, direction, 1)][i] *= -1;
-					} 
-					// else if (p*4/15 < p3 && p3 < p*8/15) {
-					// 	c_error_pos_211[C.getFaceQubits(S, face, direction, 1)][i] *= -1;
-					// 	c_error_pos_211[C.getFaceQubits(S, face, direction, 2)][i] *= -1;
-					// 	c_error_pos_211[C.getFaceQubits(S, face, direction, 3)][i] *= -1;
-					// } else if (p*8/15 < p3 && p3 < p*12/15) {
-					// 	c_error_pos_211[C.getFaceQubits(S, face, direction, 2)][i] *= -1;
-					// 	c_error_pos_211[C.getFaceQubits(S, face, direction, 3)][i] *= -1;
-					// }
+					} else if (p*4/15 < p3 && p3 < p*8/15) {
+						c_error_pos_211[C.getFaceQubits(S, face, direction, 2)][i] *= -1;
+						c_error_pos_211[C.getFaceQubits(S, face, direction, 3)][i] *= -1;
+					} else if (p*8/15 < p3 && p3 < p*12/15) {
+						c_error_pos_211[C.getFaceQubits(S, face, direction, 1)][i] *= -1;
+						c_error_pos_211[C.getFaceQubits(S, face, direction, 2)][i] *= -1;
+						c_error_pos_211[C.getFaceQubits(S, face, direction, 3)][i] *= -1;
+					}
 
-					if (p4 < p*8/15) { //purple
+					if (p4 < p*4/15) { //purple
 						c_error_pos_211[C.getFaceQubits(S, face, direction, 0)][i] *= -1;
 					} 
-					// else if (p*4/15 < p4 && p4 < p*8/15) { //purple
-					// 	c_error_pos_211[C.getFaceQubits(S, face, direction, 1)][i] *= -1;
-					// 	c_error_pos_211[C.getFaceQubits(S, face, direction, 2)][i] *= -1;
-					// 	c_error_pos_211[C.getFaceQubits(S, face, direction, 3)][i] *= -1;
-					// } else if (p*8/15 < p4 && p4 < p*12/15) { //purple
-					// 	c_error_pos_211[C.getFaceQubits(S, face, direction, 0)][i] *= -1;
-					// 	c_error_pos_211[C.getFaceQubits(S, face, direction, 1)][i] *= -1;
-					// 	c_error_pos_211[C.getFaceQubits(S, face, direction, 2)][i] *= -1;
-					// 	c_error_pos_211[C.getFaceQubits(S, face, direction, 3)][i] *= -1;
-					// }
-			
+					else if (p*4/15 < p4 && p4 < p*8/15) { //purple
+						c_error_pos_211[C.getFaceQubits(S, face, direction, 1)][i] *= -1;
+						c_error_pos_211[C.getFaceQubits(S, face, direction, 2)][i] *= -1;
+						c_error_pos_211[C.getFaceQubits(S, face, direction, 3)][i] *= -1;
+					} else if (p*8/15 < p4 && p4 < p*12/15) { //purple
+						c_error_pos_211[C.getFaceQubits(S, face, direction, 0)][i] *= -1;
+						c_error_pos_211[C.getFaceQubits(S, face, direction, 1)][i] *= -1;
+						c_error_pos_211[C.getFaceQubits(S, face, direction, 2)][i] *= -1;
+						c_error_pos_211[C.getFaceQubits(S, face, direction, 3)][i] *= -1;
+					}		
 				}
 			}
 		}
@@ -238,7 +238,9 @@ void Cluster::addBiasedGateNoise1(const double & p, const double & B, const int&
 	
 	for (int c = 0; c < S.x*S.y*S.z; c++) {
 		coord C(c,S);
-		if (C.z == S.z - 1 || C.x == 0) {//remove boundary cubes
+		if (this_surf == PLANE && (C.z == S.z - 1 || C.y == S.y - 1)) {//remove boundary cubes
+			continue;
+		} if (this_surf == TORUS && C.z == S.z - 1){
 			continue;
 		}
 		for (int i = 0; i < 2; i++) {//211
@@ -382,7 +384,7 @@ void Cluster::addBiasedGateNoise2(const double & p, const double & B, const int&
 	
 	for (int c = 0; c < S.x*S.y*S.z; c++) {
 		coord C(c,S);
-		if (C.z == S.z - 1 || C.x == 0) {//remove boundary cubes
+		if (C.z == S.z - 1 || C.y == S.y - 1) {//remove boundary cubes
 			continue;
 		}
 		for (int i = 0; i < 2; i++) {//211
@@ -810,10 +812,10 @@ int main(int argc, const char *argv[]) {
 ///######## 1D run ########
 
 //### loop run:
-	//(INDEP)  ###(p_th ~0.08 4/28 verified)
+	//(INDEP)  ###(p_th 8.036(7)% 50924731)
 		///./simulate -N INDEP -n 10000 --pmin 0.06 --pmax 0.09 --lmin 3 --Np 30 -v 1
-	//(GATE) ###(p_th ~0.0065)
-		///./simulate -N GATE -n 1000 --pmin 0.09 --pmax 0.012 --lmin 3 -v 1
+	//(GATE) ###(p_th (0.663(2)%, 2.3%) 55973609)
+		///./simulate -N GATE -n 1000 --pmin 0.009 --pmax 0.012 --lmin 3 -v 1
 	//(GATE_biased (1)) run \beta = 1000 (*p_ref = 1.37% ArXiv 1308.4776 *)
 		///./simulate --qmin 1000 --pmin 0.01 --pmax 0.016 --Np 30 --Nq 1 -n 10000 --lmin 3 --lmax 21 -v 1 -N GATE_biased
 

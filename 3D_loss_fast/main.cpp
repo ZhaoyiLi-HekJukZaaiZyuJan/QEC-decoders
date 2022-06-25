@@ -245,9 +245,9 @@ int main(int argc, const char *argv[]) {
 //./simulate -s PLANE --qmin 0 --qmax 0 --pmin 0.05 --pmax 0.1  --Np 20 --Nq 1 -n 1000 --lmin 3 -v 1 -N INDEP_211
 //### INDEP run: (*p_th = 3%*)
 ///./simulate -s PLANE --qmin 0 --qmax 0 --pmin 0.02 --pmax 0.05  --Np 20 --Nq 1 -n 1000 --lmin 3 --lmax 17 -v 1 -N INDEP
-//### GATE:      (*p_th = 0.585%, 6.5% verified: 53018107%*)
-//### GATE_full: (*p_th = 0.591%, 7.6% verified: 14348%*) C.z == S.z - 1 || C.x == 0
-//				 (*p_th = 0.57%, 3.3% verified: 54759532*) C.z == S.z - 1 || C.y == S.y - 1
+//### GATE:      (*p_th = 0.57%, 4.3% verified: 55819208%*)  C.z == S.z - 1 || C.y == S.y - 1
+//### GATE_full: (*p_th = 0.591%, 7.6% verified: 14348%*) C.z == S.z - 1 || C.x == 0 problematic
+//				 (*p_th = 0.57%, 4.3% verified: 54759532*) C.z == S.z - 1 || C.y == S.y - 1
 //### EM2:       (*PLANE: p_th = 0.572%, 5.9% verified: 53112898%*) 
 //				 (*TORUS:  *)
 //./simulate -s TORUS --qmin 0 --qmax 0 --pmin 0 --pmax 0.009  --Np 20 --Nq 1 -n 10000 --lmin 3 --lmax 17 -v 1 -N EM2

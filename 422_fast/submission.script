@@ -1,5 +1,5 @@
 #!/bin/sh
-#SBATCH -o results/%A_%a_terminal.out #STDOUT  
+#SBATCH -o /scratch/users/ladmon/422/results/%A_%a_terminal.out #STDOUT  
 #SBATCH --time=48:00:00            
 #SBATCH --ntasks=1    
 #SBATCH --cpus-per-task=2           
@@ -9,7 +9,7 @@
 
 
 module load gcc/10.1.0
-srun ./simulate -s PLANE -N GATE --pmin 0 --pmax 0.008  --Np 20 --Npl 1 -n 1000 --Lmin 3 --Lmax 17 -v 1 --fname "results/${SLURM_ARRAY_JOB_ID}_$SLURM_ARRAY_TASK_ID.out"
+./simulate -N INDEP -n 10000 --pmin 0 --pmax 0.06 --lmin 3 --Np 30 -v 1 --fname "/scratch/users/ladmon/422/results/${SLURM_ARRAY_JOB_ID}_$SLURM_ARRAY_TASK_ID.out"
 
 echo "----------------------------------"
 echo "id:" "$SLURM_ARRAY_JOB_ID"

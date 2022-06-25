@@ -25,7 +25,7 @@ class cluster {
 	cluster(const coord&, const surfacetype&);
 	void addNoise(const double&, const double&, const noisemodel, const lossmodel, const int& seed =0);
 	void addPauli(const double&, const double&, const int& seed = 0);
-	//add probability combined noise
+	//add partially probability combined noise
 	void addGateNoise(const double&, const int&);
 	//add noise respectively for each gate applications
 	void addFullGateNoise(const double&, const int&);

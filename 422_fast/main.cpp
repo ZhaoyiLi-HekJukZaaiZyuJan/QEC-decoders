@@ -106,6 +106,11 @@ void Cluster::addGateNoise(const double & p, const int& seed){
 	}
 	for (int c = 0; c < S.x*S.y*S.z; c++) {
 		coord C(c,S);
+		if (this_surf == PLANE && (C.z == S.z - 1 || C.y == S.y - 1)) {//remove boundary cubes
+			continue;
+		} if (this_surf == TORUS && C.z == S.z - 1){
+			continue;
+		}
 		for (int i = 0; i < 4; i++) {//422
 			for (int face = 0; face < 3; face ++) {
 				double p1 = dist(engine); //process 1 (black)
@@ -460,7 +465,7 @@ int main(int argc, const char *argv[]) {
 ///######## 1D run ########
 
 //### loop run:
-	//(INDEP)  ###(p_th ~ 0.045 heuristics)
+	//(INDEP)  ###(p_th 4.2% 53570232)
 		///./simulate -N INDEP -n 10000 --pmin 0 --pmax 0.06 --lmin 3 --Np 30 -v 1
 	//(GATE) ###(p_th ~ 0.0043, pl ~ 0.1)
 		///./simulate -N GATE -n 10000 --pmin 0 --pmax 0.008 --lmin 3 -v 1
@@ -470,6 +475,7 @@ int main(int argc, const char *argv[]) {
 //######## test ########
 	///./simulate -N INDEP -n 10000 --pmin 0.06 --pmax 0.09 --lmin 3 -v 1 --test ###(pE ~0.8)
 //######## timing test ########
+
 ///./simulate -s PLANE --pmin 0.01 --pmax 0.05  --Np 10 --Nq 1 -n 500 --lmin 3 -v 1
 
 //######## test large ########

@@ -44,7 +44,9 @@ void cluster::addPauli(const double & p1, const double & p2, const int& seed){
 	//Error Model 2: Correlation Error on the Same Edge
 	for (int c = 0; c < S.x*S.y*S.z; c++) {
 		coord C(c,S);
-		if (C.z == S.z - 1 || C.x == 0) {//remove boundary cubes
+		if (this_surf == PLANE && (C.z == S.z - 1 || C.y == S.y - 1)) {//remove boundary cubes
+			continue;
+		} if (this_surf == TORUS && C.z == S.z - 1){
 			continue;
 		}
 		for (int face = 0; face < 3; face ++) {
@@ -125,22 +127,21 @@ void cluster::addGateNoise(const double & p, const int& seed=0){
 				c_error_pos[c] *= -1;
 			}
 		}
-		for (int i = 0; i < 2; i++) { //single qubit errors
-			if(dist(engine) < p*8/15) {
-				c_error_pos[c] *= -1;
-			}
-		}
 	}
 
 	//////// CZ gates //////// 
 	for (int c = 0; c < S.x*S.y*S.z; c++) {
 		coord C(c,S);
-		if (C.z == S.z - 1 || C.y == S.y - 1) {//remove boundary cubes
+		if (this_surf == PLANE && (C.z == S.z - 1 || C.y == S.y - 1)) {//remove boundary cubes
+			continue;
+		} if (this_surf == TORUS && C.z == S.z - 1){
 			continue;
 		}
 		for (int face = 0; face < 3; face++) {
 			for (int dir = 0; dir < 2; dir ++) {//verticle/horizontal
 				double p1 = dist(engine);
+				double p2 = dist(engine);//black/purple
+
 				if (p1 < p*4/15) {
 					c_error_pos[C.getFaceQubits(S, face, dir, 3)] *= -1;//3
 				} else if (p*4/15 < p1 && p1 < p*8/15) {
@@ -149,14 +150,19 @@ void cluster::addGateNoise(const double & p, const int& seed=0){
 					c_error_pos[C.getFaceQubits(S, face, dir, 3)] *= -1;//3
 					c_error_pos[C.getFaceQubits(S, face, dir, 2)] *= -1;//2
 				}
+				if (p2< p*8/15) {
+					c_error_pos[C.getFaceQubits(S, face, dir, 3)] *= -1;//3
+				}
 			}
 		}
 	}
 	for (int c = 0; c < 3*S.x*S.y*S.z; c++) {
 		coord C(c, S);
 		if(this_surf == PLANE && ((C.l == 1 && (C.y == S.y - 1 || C.x == 0)) ||(C.l == 2 && (C.z == S.z - 1 || C.x == 0)))){
-			c_error_pos[c] = 1;
-		}//	for planar code, remove errors on left, more, and lower boundaries to create edges.
+			c_error_pos[c] = 1; //	for planar code, remove errors on left, more, and lower boundaries to create edges.
+		} if(this_surf == TORUS && C.l == 2 && C.z == S.z - 1){
+			c_error_pos[c] = 1;	//	for planar code, remove time like errors on left, more, and lower boundaries to create edges.
+		}
 	}
 }
 
@@ -182,7 +188,9 @@ void cluster::addFullGateNoise(const double & p, const int& seed=0){
 	//////// CZ gates ////////
 	for (int c = 0; c < S.x*S.y*S.z; c++) {
 		coord C(c,S);
-		if (C.z == S.z - 1 || C.y == S.y - 1) {//remove boundary cubes
+		if (this_surf == PLANE && (C.z == S.z - 1 || C.y == S.y - 1)) {//remove boundary cubes
+			continue;
+		} if (this_surf == TORUS && C.z == S.z - 1){
 			continue;
 		}
 		for (int face = 0; face < 3; face++) {
@@ -232,8 +240,10 @@ void cluster::addFullGateNoise(const double & p, const int& seed=0){
 	for (int c = 0; c < 3*S.x*S.y*S.z; c++) {
 		coord C(c, S);
 		if(this_surf == PLANE && ((C.l == 1 && (C.y == S.y - 1 || C.x == 0)) ||(C.l == 2 && (C.z == S.z - 1 || C.x == 0)))){
-			c_error_pos[c] = 1;
-		}//	for planar code, remove errors on left, more, and lower boundaries to create edges.
+			c_error_pos[c] = 1; //	for planar code, remove errors on left, more, and lower boundaries to create edges.
+		} if(this_surf == TORUS && C.l == 2 && C.z == S.z - 1){
+			c_error_pos[c] = 1;	//	for planar code, remove time like errors on left, more, and lower boundaries to create edges.
+		}
 	}
 }
 
@@ -258,7 +268,9 @@ void cluster::addBiasedGateNoise(const double & p, const double & B, const int& 
 
 	for (int c = 0; c < S.x*S.y*S.z; c++) {
 		coord C(c,S);
-		if (C.z == S.z - 1 || C.x == 0) {//remove boundary cubes
+		if (this_surf == PLANE && (C.z == S.z - 1 || C.y == S.y - 1)) {//remove boundary cubes
+			continue;
+		} if (this_surf == TORUS && C.z == S.z - 1){
 			continue;
 		}
 		for (int face = 0; face < 3; face++) {

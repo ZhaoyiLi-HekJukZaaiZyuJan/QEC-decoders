@@ -1,10 +1,10 @@
 #!/bin/tcsh
 #BSUB -q long
 #BSUB -J My_array[1-100]     #job name AND job array
-#BSUB -W 24:00 #runtime limit
+#BSUB -W 48:00 #runtime limit
 
-## BSUB -o /scratch/users/ladmon/3D/results/%J_%I_terminal.out  #output - %J is the job-id %I is the job-array index
-## BSUB -e /scratch/users/ladmon/3D/results/%J_%I_terminal.err  #error - %J is the job-id %I is the job-array index 
+## BSUB -o /u/xo/ladmon/results/3D/results/%J_%I_terminal.out  #output - %J is the job-id %I is the job-array index
+## BSUB -e /u/xo/ladmon/results/3D/results/%J_%I_terminal.err  #error - %J is the job-id %I is the job-array index 
 
 #./simulate -s PLANE --qmin 0 --qmax 0 --pmin 0 --pmax 0.006  --Np 50 --Nq 1 -n 10000 --lmin 3 --lmax 21 -v 1 -N GATE_full --fname "/u/xo/ladmon/results/${LSB_JOBID}_${LSB_JOBINDEX}.out" --out
-./simulate -s TORUS --pmin 0.003 --pmax 0.009 --qmin 0 --qmax 0 --Np 30 --Nq 1  -n 1000 --lmin 3 --lmax 21 -v 1 -N EM2 --fname "/u/xo/ladmon/results/${LSB_JOBID}_${LSB_JOBINDEX}.out" --out
+./simulate -s TORUS --pmin 0.003 --pmax 0.009 --qmin 0 --qmax 0 --Np 30 --Nq 1  -n 1000 --lmin 3 --lmax 21 -v 1 -N EM2 --fname "/u/xo/ladmon/results/3D/results/${LSB_JOBID}_${LSB_JOBINDEX}.out" --out
