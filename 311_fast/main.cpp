@@ -38,8 +38,8 @@ class Cluster : public cluster {
 	void addBiasedGateNoise1(const double &, const double &, const int& seed=0);
 	void addBiasedGateNoise2(const double &, const double &, const int& seed=0);
 	Cluster(const coord&, const surfacetype&);
-	void decode311a(int);
 	void decode311b(int);
+	void decode311a(int);
 	void printQubit(surfacetype);
 };
 
@@ -78,155 +78,7 @@ void Cluster::addPauli311(const double & p, const double & q, const int& seed){
 	//		}
 	//	}
 }
-
 void Cluster::addGateNoisea(const double & p, const int& seed){
-	for (int c = 0; c < 3*S.x*S.y*S.z; c++) {
-		c_error_pos_311[c][0] = 1;
-		c_error_pos_311[c][1] = 1;
-		c_error_pos_311[c][2] = 2;
-	}
-	//Total heuristic Probabilities
-	random_device rd;
-	mt19937 engine{rd()};
-	if (seed != 0) {
-		engine.seed(seed);
-	}
-	uniform_real_distribution<> dist(0.0, 1.0);
-
-	//	//Initialization of error operator
-	//	for (int c = 0; c < 3*S.x*S.y*S.z; c++) {
-	//		double p1 = dist(engine); //+1 error
-	//		double p2 = dist(engine); //+2 error
-	//		double pCX = dist(engine); //CZ error
-	//
-	//		if(p1 < p*2/3) {
-	//			c_error_pos_311[c][1] *= -1;
-	//		}
-	//		if(p2 < p*2/3) {
-	//			c_error_pos_311[c][0] *= -1;
-	//			c_error_pos_311[c][1] *= -1;
-	//		}
-	//		if(pCX < p*4/15) {
-	//			c_error_pos_311[c][1] *= -1;
-	//		} else if(p*4/15 < pCX && pCX < p*8/15) {
-	//			c_error_pos_311[c][0] *= -1;
-	//		} else if(p*8/15 < pCX && pCX < p*12/15) {
-	//			c_error_pos_311[c][0] *= -1;
-	//			c_error_pos_311[c][1] *= -1;
-	//		}
-	//	}
-	//initialization, measurement and storage errors
-	for (int c = 0; c < 3*S.x*S.y*S.z; c++) {
-		for (int i = 0; i < 3; i++) {// 311
-	//			if(dist(engine) < p*2-pow(p,2)*4/3) {
-			if(dist(engine) < p*2) {
-				c_error_pos_311[c][i] = -1;
-			} else {
-				c_error_pos_311[c][i] = 1;
-			}
-		}
-	}
-	
-	for (int c = 0; c < S.x*S.y*S.z; c++) {
-		coord C(c,S);
-		if (this_surf == PLANE && (C.z == S.z - 1 || C.y == S.y - 1)) {//remove boundary cubes
-			continue;
-		} if (this_surf == TORUS && C.z == S.z - 1){
-			continue;
-		}
-		for (int i = 0; i < 3; i++) {//311
-			for (int face = 0; face < 3; face ++) {
-				for (int direction = 0; direction < 2; direction++) {//horizontal/vertical
-
-					int j = direction ? i : divmod(i+2, 3);
-					// cout << j << endl;
-
-					double p1 = dist(engine); //process 1 (black)
-					double p2 = dist(engine); //process 2 (pink)
-					double p3 = dist(engine); //process 3 (rose)
-					double p4 = dist(engine); //process 4 (purple)
-					
-					double p5 = dist(engine); //process 5 (black2)
-					double p6 = dist(engine); //process 6 (pink2)
-
-					if (p1 < p*4/15) { //black
-						c_error_pos_311[C.getFaceQubits(S, face, direction, 3)][j] *= -1;
-					} if (p*4/15 < p1 && p1 < p*8/15) {
-						c_error_pos_311[C.getFaceQubits(S, face, direction, 3)][j] *= -1;
-					}
-							
-					if (p2 < p*4/15) { //pink
-						c_error_pos_311[C.getFaceQubits(S, face, direction, 2)][j] *= -1;
-					} else if (p*4/15 < p2 && p2 < p*8/15) {
-						c_error_pos_311[C.getFaceQubits(S, face, direction, 3)][j] *= -1;
-					} else if (p*8/15 < p2 && p2 < p*12/15) {
-						c_error_pos_311[C.getFaceQubits(S, face, direction, 2)][j] *= -1;
-						c_error_pos_311[C.getFaceQubits(S, face, direction, 3)][j] *= -1;
-					}
-
-					if (p3 < p*4/15) { //rose
-						c_error_pos_311[C.getFaceQubits(S, face, direction, 1)][j] *= -1;
-					} else if (p*4/15 < p3 && p3 < p*8/15) {
-						c_error_pos_311[C.getFaceQubits(S, face, direction, 1)][j] *= -1;
-						c_error_pos_311[C.getFaceQubits(S, face, direction, 2)][j] *= -1;
-						c_error_pos_311[C.getFaceQubits(S, face, direction, 3)][j] *= -1;
-					} else if (p*8/15 < p3 && p3 < p*12/15) {
-						c_error_pos_311[C.getFaceQubits(S, face, direction, 2)][j] *= -1;
-						c_error_pos_311[C.getFaceQubits(S, face, direction, 3)][j] *= -1;
-					}
-
-					if (p4 < p*4/15) { //purple Z
-						c_error_pos_311[C.getFaceQubits(S, face, direction, 0)][j] *= -1;
-					} else if (p*4/15 < p4 && p4 < p*8/15) {  //X
-						c_error_pos_311[C.getFaceQubits(S, face, direction, 1)][j] *= -1;
-						c_error_pos_311[C.getFaceQubits(S, face, direction, 2)][j] *= -1;
-						c_error_pos_311[C.getFaceQubits(S, face, direction, 3)][j] *= -1;
-					} else if (p*8/15 < p4 && p4 < p*12/15) { //Y
-						c_error_pos_311[C.getFaceQubits(S, face, direction, 0)][j] *= -1;
-						c_error_pos_311[C.getFaceQubits(S, face, direction, 1)][j] *= -1;
-						c_error_pos_311[C.getFaceQubits(S, face, direction, 2)][j] *= -1;
-						c_error_pos_311[C.getFaceQubits(S, face, direction, 3)][j] *= -1;
-					}
-
-					if (p5 < p*4/15) { //black2
-						c_error_pos_311[C.getFaceQubits(S, face, direction, 3)][divmod(j+1,3)] *= -1;
-					} else if (p*4/15 < p5 && p5 < p*8/15) { //X
-						c_error_pos_311[C.getFaceQubits(S, face, direction, 0)][j] *= -1;
-						c_error_pos_311[C.getFaceQubits(S, face, direction, 1)][j] *= -1;
-						c_error_pos_311[C.getFaceQubits(S, face, direction, 2)][j] *= -1;
-						c_error_pos_311[C.getFaceQubits(S, face, direction, 3)][j] *= -1;
-						c_error_pos_311[C.getFaceQubits(S, face, direction, 3)][divmod(j+1,3)] *= -1;
-					} else if (p*8/15 < p5 && p5 < p*12/15) { //Y
-						c_error_pos_311[C.getFaceQubits(S, face, direction, 0)][j] *= -1;
-						c_error_pos_311[C.getFaceQubits(S, face, direction, 1)][j] *= -1;
-						c_error_pos_311[C.getFaceQubits(S, face, direction, 2)][j] *= -1;
-						c_error_pos_311[C.getFaceQubits(S, face, direction, 3)][j] *= -1;
-					}
-
-					if (p6 < p*4/15) { //purple2
-						c_error_pos_311[C.getFaceQubits(S, face, direction, 2)][divmod(j+1,3)] *= -1;
-					} else if (p*4/15 < p6 && p6 < p*8/15) {
-						c_error_pos_311[C.getFaceQubits(S, face, direction, 0)][j] *= -1;
-						c_error_pos_311[C.getFaceQubits(S, face, direction, 1)][j] *= -1;
-						c_error_pos_311[C.getFaceQubits(S, face, direction, 2)][j] *= -1;
-						c_error_pos_311[C.getFaceQubits(S, face, direction, 3)][j] *= -1;
-						c_error_pos_311[C.getFaceQubits(S, face, direction, 2)][divmod(j+1,3)] *= -1;
-						c_error_pos_311[C.getFaceQubits(S, face, direction, 3)][divmod(j+1,3)] *= -1;
-					} else if (p*8/15 < p6 && p6 < p*12/15) {
-						c_error_pos_311[C.getFaceQubits(S, face, direction, 0)][j] *= -1;
-						c_error_pos_311[C.getFaceQubits(S, face, direction, 1)][j] *= -1;
-						c_error_pos_311[C.getFaceQubits(S, face, direction, 2)][j] *= -1;
-						c_error_pos_311[C.getFaceQubits(S, face, direction, 3)][j] *= -1;
-						c_error_pos_311[C.getFaceQubits(S, face, direction, 3)][divmod(j+1,3)] *= -1;
-					}
-					
-				}
-			}
-		}
-	}
-}
-
-void Cluster::addGateNoiseb(const double & p, const int& seed){
 	for (int c = 0; c < 3*S.x*S.y*S.z; c++) {
 		c_error_pos_311[c][0] = 1;
 		c_error_pos_311[c][1] = 1;
@@ -378,6 +230,153 @@ void Cluster::addGateNoiseb(const double & p, const int& seed){
 					c_error_pos_311[C.getFaceQubits(S, face, direction, 3)][j] *= -1;
 				}
 				
+			}
+		}
+	}
+}
+
+void Cluster::addGateNoiseb(const double & p, const int& seed){
+	for (int c = 0; c < 3*S.x*S.y*S.z; c++) {
+		c_error_pos_311[c][0] = 1;
+		c_error_pos_311[c][1] = 1;
+		c_error_pos_311[c][2] = 2;
+	}
+	//Total heuristic Probabilities
+	random_device rd;
+	mt19937 engine{rd()};
+	if (seed != 0) {
+		engine.seed(seed);
+	}
+	uniform_real_distribution<> dist(0.0, 1.0);
+
+	//	//Initialization of error operator
+	//	for (int c = 0; c < 3*S.x*S.y*S.z; c++) {
+	//		double p1 = dist(engine); //+1 error
+	//		double p2 = dist(engine); //+2 error
+	//		double pCX = dist(engine); //CZ error
+	//
+	//		if(p1 < p*2/3) {
+	//			c_error_pos_311[c][1] *= -1;
+	//		}
+	//		if(p2 < p*2/3) {
+	//			c_error_pos_311[c][0] *= -1;
+	//			c_error_pos_311[c][1] *= -1;
+	//		}
+	//		if(pCX < p*4/15) {
+	//			c_error_pos_311[c][1] *= -1;
+	//		} else if(p*4/15 < pCX && pCX < p*8/15) {
+	//			c_error_pos_311[c][0] *= -1;
+	//		} else if(p*8/15 < pCX && pCX < p*12/15) {
+	//			c_error_pos_311[c][0] *= -1;
+	//			c_error_pos_311[c][1] *= -1;
+	//		}
+	//	}
+	//initialization, measurement and storage errors
+	for (int c = 0; c < 3*S.x*S.y*S.z; c++) {
+		for (int i = 0; i < 3; i++) {// 311
+	//			if(dist(engine) < p*2-pow(p,2)*4/3) {
+			if(dist(engine) < p*2) {
+				c_error_pos_311[c][i] = -1;
+			} else {
+				c_error_pos_311[c][i] = 1;
+			}
+		}
+	}
+	
+	for (int c = 0; c < S.x*S.y*S.z; c++) {
+		coord C(c,S);
+		if (this_surf == PLANE && (C.z == S.z - 1 || C.y == S.y - 1)) {//remove boundary cubes
+			continue;
+		} if (this_surf == TORUS && C.z == S.z - 1){
+			continue;
+		}
+		for (int i = 0; i < 3; i++) {//311
+			for (int face = 0; face < 3; face ++) {
+				for (int direction = 0; direction < 2; direction++) {//horizontal/vertical
+
+					int j = direction ? i : divmod(i+2, 3);
+					// cout << j << endl;
+
+					double p1 = dist(engine); //process 1 (black)
+					double p2 = dist(engine); //process 2 (pink)
+					double p3 = dist(engine); //process 3 (rose)
+					double p4 = dist(engine); //process 4 (purple)
+					
+					double p5 = dist(engine); //process 5 (black2)
+					double p6 = dist(engine); //process 6 (pink2)
+
+					if (p1 < p*4/15) { //black
+						c_error_pos_311[C.getFaceQubits(S, face, direction, 3)][j] *= -1;
+					} if (p*4/15 < p1 && p1 < p*8/15) {
+						c_error_pos_311[C.getFaceQubits(S, face, direction, 3)][j] *= -1;
+					}
+							
+					if (p2 < p*4/15) { //pink
+						c_error_pos_311[C.getFaceQubits(S, face, direction, 2)][j] *= -1;
+					} else if (p*4/15 < p2 && p2 < p*8/15) {
+						c_error_pos_311[C.getFaceQubits(S, face, direction, 3)][j] *= -1;
+					} else if (p*8/15 < p2 && p2 < p*12/15) {
+						c_error_pos_311[C.getFaceQubits(S, face, direction, 2)][j] *= -1;
+						c_error_pos_311[C.getFaceQubits(S, face, direction, 3)][j] *= -1;
+					}
+
+					if (p3 < p*4/15) { //rose
+						c_error_pos_311[C.getFaceQubits(S, face, direction, 1)][j] *= -1;
+					} else if (p*4/15 < p3 && p3 < p*8/15) {
+						c_error_pos_311[C.getFaceQubits(S, face, direction, 1)][j] *= -1;
+						c_error_pos_311[C.getFaceQubits(S, face, direction, 2)][j] *= -1;
+						c_error_pos_311[C.getFaceQubits(S, face, direction, 3)][j] *= -1;
+					} else if (p*8/15 < p3 && p3 < p*12/15) {
+						c_error_pos_311[C.getFaceQubits(S, face, direction, 2)][j] *= -1;
+						c_error_pos_311[C.getFaceQubits(S, face, direction, 3)][j] *= -1;
+					}
+
+					if (p4 < p*4/15) { //purple Z
+						c_error_pos_311[C.getFaceQubits(S, face, direction, 0)][j] *= -1;
+					} else if (p*4/15 < p4 && p4 < p*8/15) {  //X
+						c_error_pos_311[C.getFaceQubits(S, face, direction, 1)][j] *= -1;
+						c_error_pos_311[C.getFaceQubits(S, face, direction, 2)][j] *= -1;
+						c_error_pos_311[C.getFaceQubits(S, face, direction, 3)][j] *= -1;
+					} else if (p*8/15 < p4 && p4 < p*12/15) { //Y
+						c_error_pos_311[C.getFaceQubits(S, face, direction, 0)][j] *= -1;
+						c_error_pos_311[C.getFaceQubits(S, face, direction, 1)][j] *= -1;
+						c_error_pos_311[C.getFaceQubits(S, face, direction, 2)][j] *= -1;
+						c_error_pos_311[C.getFaceQubits(S, face, direction, 3)][j] *= -1;
+					}
+
+					if (p5 < p*4/15) { //black2
+						c_error_pos_311[C.getFaceQubits(S, face, direction, 3)][divmod(j+1,3)] *= -1;
+					} else if (p*4/15 < p5 && p5 < p*8/15) { //X
+						c_error_pos_311[C.getFaceQubits(S, face, direction, 0)][j] *= -1;
+						c_error_pos_311[C.getFaceQubits(S, face, direction, 1)][j] *= -1;
+						c_error_pos_311[C.getFaceQubits(S, face, direction, 2)][j] *= -1;
+						c_error_pos_311[C.getFaceQubits(S, face, direction, 3)][j] *= -1;
+						c_error_pos_311[C.getFaceQubits(S, face, direction, 3)][divmod(j+1,3)] *= -1;
+					} else if (p*8/15 < p5 && p5 < p*12/15) { //Y
+						c_error_pos_311[C.getFaceQubits(S, face, direction, 0)][j] *= -1;
+						c_error_pos_311[C.getFaceQubits(S, face, direction, 1)][j] *= -1;
+						c_error_pos_311[C.getFaceQubits(S, face, direction, 2)][j] *= -1;
+						c_error_pos_311[C.getFaceQubits(S, face, direction, 3)][j] *= -1;
+					}
+
+					if (p6 < p*4/15) { //purple2
+						c_error_pos_311[C.getFaceQubits(S, face, direction, 2)][divmod(j+1,3)] *= -1;
+					} else if (p*4/15 < p6 && p6 < p*8/15) {
+						c_error_pos_311[C.getFaceQubits(S, face, direction, 0)][j] *= -1;
+						c_error_pos_311[C.getFaceQubits(S, face, direction, 1)][j] *= -1;
+						c_error_pos_311[C.getFaceQubits(S, face, direction, 2)][j] *= -1;
+						c_error_pos_311[C.getFaceQubits(S, face, direction, 3)][j] *= -1;
+						c_error_pos_311[C.getFaceQubits(S, face, direction, 2)][divmod(j+1,3)] *= -1;
+						c_error_pos_311[C.getFaceQubits(S, face, direction, 3)][divmod(j+1,3)] *= -1;
+					} else if (p*8/15 < p6 && p6 < p*12/15) {
+						c_error_pos_311[C.getFaceQubits(S, face, direction, 0)][j] *= -1;
+						c_error_pos_311[C.getFaceQubits(S, face, direction, 1)][j] *= -1;
+						c_error_pos_311[C.getFaceQubits(S, face, direction, 2)][j] *= -1;
+						c_error_pos_311[C.getFaceQubits(S, face, direction, 3)][j] *= -1;
+						c_error_pos_311[C.getFaceQubits(S, face, direction, 3)][divmod(j+1,3)] *= -1;
+					}
+					
+				}
 			}
 		}
 	}
@@ -736,9 +735,9 @@ void Cluster::addBiasedGateNoise2(const double & p, const double & B, const int&
 //No seed used for seed = 0
 void Cluster::addNoise(const double & p, const double & q, const noisemodel N, const lossmodel L, const concattype conc, const int& seed){
 	if (N == GATE) { //p:error probability, //q: bias
-		if (conc == concat311a){
+		if (conc == concat311b){
 			addGateNoisea(p, seed);
-		} else if (conc == concat311b){
+		} else if (conc == concat311a){
 			addGateNoiseb(p, seed);
 		}
 	}
@@ -767,7 +766,7 @@ void Cluster::addNoise(const double & p, const double & q, const noisemodel N, c
 	}
 }
 
-void Cluster::decode311a(int verbosity = 0){
+void Cluster::decode311b(int verbosity = 0){
 	//initialization loss and z_error
 	for (int c = 0; c < 3*S.x*S.y*S.z; c++) {
 		//stabalizer measurement (xx)
@@ -800,7 +799,7 @@ void Cluster::decode311a(int verbosity = 0){
 	}
 }
 
-void Cluster::decode311b(int verbosity = 0){
+void Cluster::decode311a(int verbosity = 0){
 	//initialization loss and z_error
 	for (int c = 0; c < 3*S.x*S.y*S.z; c++) {
 		//stabalizer measurement (xx)
@@ -896,7 +895,7 @@ void testDecoding(Cluster& test_cluster, const double& p, const double& q, const
 	start_t = clock();
 	//add noise
 	test_cluster.addNoise(p, q, N, L, conc, seed);
-	test_cluster.decode311a(0);
+	test_cluster.decode311b(0);
 	// test_cluster.addError();
 	
 	cout << "t(Generation):"<< double(clock()-start_t)/CLOCKS_PER_SEC << endl;//timing
@@ -962,10 +961,10 @@ int loopDecoding(const int lmin, const int lmax, const int trials, const double 
 						Cluster test_cluster({l,l,l,0}, surf);
 						for(int k = start; k < end; ++k){
 							test_cluster.addNoise(p, q, N, L, conc, 0);
-							if(conc == concat311a){
-								test_cluster.decode311a(0);
-							} else if(conc == concat311b){
+							if(conc == concat311b){
 								test_cluster.decode311b(0);
+							} else if(conc == concat311a){
+								test_cluster.decode311a(0);
 							}
 							try {
 								test_cluster.getSuperChunks();
@@ -980,10 +979,10 @@ int loopDecoding(const int lmin, const int lmax, const int trials, const double 
 				} else {
 					for(int k = 0; k < trials; ++k){
 						test_cluster.addNoise(p,q, N,L,conc, 0);
-						if(conc == concat311a){
-								test_cluster.decode311a(0);
-						} else if(conc == concat311b){
+						if(conc == concat311b){
 								test_cluster.decode311b(0);
+						} else if(conc == concat311a){
+								test_cluster.decode311a(0);
 						}
 						
 						try {
@@ -1042,7 +1041,7 @@ int main(int argc, const char *argv[]) {
 	("fname", "filename", cxxopts::value(fname)->default_value(""))
 	("out", "output in this directory as an .out file", cxxopts::value(out)->default_value("0"))
 	("s", "surface type", cxxopts::value(s)->default_value("PLANE"))
-	("c", "concatenation type", cxxopts::value(c)->default_value("concat311a"))
+	("c", "concatenation type", cxxopts::value(c)->default_value("concat311b"))
 	("lmin", "Minimal size of mesh", cxxopts::value(lmin)->default_value("3"))
 	("lmax", "Maximal size of mesh", cxxopts::value(lmax)->default_value("17"))
 	("n", "Number of trials", cxxopts::value(n)->default_value("100"))
@@ -1100,12 +1099,12 @@ int main(int argc, const char *argv[]) {
 //### GATE run: (*p_th = 0.7%*)
 
 //### INDEP run:
-	//(INDEP)  ### 311a (p_th 5.65% 56198801)
+	//(INDEP)  ### 311b (p_th 5.65% 56198801)
 		///./simulate -N INDEP -n 10000 --pmin 0.07 --pmax 0.13 --lmin 3 --Np 30 -v 1
-	//(INDEP)  ### 311b (p_th 10.20(3 54447916))
-	//(GATE)   ### 311a (p_th ~ (0.325%, 3.4%) 56178855)
+	//(INDEP)  ### 311a (p_th 10.20(3 54447916))
+	//(GATE)   ### 311b (p_th ~ (0.325%, 3.4%) 56178855)
 		///./simulate -N GATE -n 1000 --pmin 0 --pmax 0.005 --lmin 3 --Np 30 -v 1
-		//     ### 311b 
+		//     ### 311a 
 	//(GATE_biased (1)) run \beta = 1000 (*p_ref = 1.37% ArXiv 1308.4776 *)
 		///./simulate --qmin 1000 --pmin 0.01 --pmax 0.016 --Np 30 --Nq 1 -n 10000 --lmin 3 --lmax 21 -v 1 -N GATE_biased
 

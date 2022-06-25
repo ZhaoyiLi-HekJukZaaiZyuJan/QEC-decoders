@@ -12,7 +12,7 @@ module load gcc/10.1.0
 
 
 ##./simulate -s PLANE -N GATE --pmin 0.006 --pmax 0.01 --Np 30 --Npl 1 -n 1000 --Lmin 3 --Lmax 21 -v 1 --fname "/scratch/users/ladmon/311/results/${SLURM_ARRAY_JOB_ID}_$SLURM_ARRAY_TASK_ID.out"
-./simulate -s PLANE ./simulate -N INDEP -n 10000 --pmin 0.03 --pmax 0.09 --lmin 3 --Np 30 -v 1 -c concat311b --fname "/scratch/users/ladmon/311/results/${SLURM_ARRAY_JOB_ID}_$SLURM_ARRAY_TASK_ID.out"
+./simulate -s PLANE ./simulate -N GATE -n 1000 --pmin 0 --pmax 0.01 --lmin 3 --Np 30 -v 1 -c concat311a --fname "/scratch/users/ladmon/311/results/${SLURM_ARRAY_JOB_ID}_$SLURM_ARRAY_TASK_ID.out"
 
 
  #./simulate --qmin 100 --pmin 0.01 --pmax 0.016 --Np 30 --Nq 1 -n 1000 --lmin 3 --lmax 21 -v 1 -N GATE_biased
