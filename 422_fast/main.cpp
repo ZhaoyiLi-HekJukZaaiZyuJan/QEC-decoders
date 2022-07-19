@@ -31,7 +31,7 @@ auto start = chrono::steady_clock::now();
 class Cluster : public cluster {
 	vector<vector<int>> c_error_pos_422;
 	public:
-	void addPauli422(const double&, const double&, const int&seed = 0);
+	void addPauli422(const double&, const double&, const int& seed = 0);
 	void addNoise(const double&, const double&, const noisemodel, const lossmodel, const int& seed = 0);
 	void addGateNoise(const double&, const int& seed = 0);
 	Cluster(const coord&, const surfacetype&);
@@ -94,7 +94,7 @@ void Cluster::addGateNoise(const double & p, const int& seed){
 	//Error Model 1: uncorrelated error distribution for all physical z_error_poss
 	for (int c = 0; c < 3*S.x*S.y*S.z; c++) {
 		for (int k = 0; k < 4; k++) {
-			for (int i = 0; i < 2; i++) { //p_S, p_M		
+			for (int i = 0; i < 3; i++) { //p_S, p_M, p_P	
 				if(dist(engine) < p*2/3) {
 					c_error_pos_422[c][k] = -1;
 				} else {
@@ -285,8 +285,10 @@ void testDecoding(Cluster& test_cluster, const double& p, const double& q, const
 	}
 	
 	if (verbosity >= 1){
+		cout << "SuperChunks:" << endl;
 		test_cluster.printSuperChunks();
 		test_cluster.getSurf();
+		cout << "Surf:" << endl;
 		test_cluster.printSurf();
 		cout << "t(getSuperChunks):" << double(clock()-start_t)/CLOCKS_PER_SEC << endl;//timing
 		start_t = clock();
@@ -310,8 +312,8 @@ int loopDecoding(const int lmin, const int lmax, const int trials, const double 
 		outfile.open(fname);
 		outfile << "L,p_error,num_success\n";
 	}
-	int binp = 0 == Np ? 1:Np;
-	int binq = 0 == Nq ? 1:Nq;
+	int binp = 0 == Np ? 1: Np;
+	int binq = 0 == Nq ? 1: Nq;
 	int num_correct;
 	
 	for (int j = 0; j <= Nq; j ++) {
@@ -343,7 +345,7 @@ int loopDecoding(const int lmin, const int lmax, const int trials, const double 
 							} catch (...) {
 								continue;
 							}
-							if (surf == PLANE && test_cluster.decodeWithMWPM(verbosity, 0, surf) == 1) {
+							if (surf == PLANE && test_cluster.decodeWithMWPMLoss(verbosity, 0, surf) == 1) {
 								num_correct ++; //correction successful
 							}
 						}
@@ -361,7 +363,7 @@ int loopDecoding(const int lmin, const int lmax, const int trials, const double 
 						} catch (...) {
 							continue;
 						}
-						if (surf == PLANE && test_cluster.decodeWithMWPM(verbosity, 0, surf) == 1) {
+						if (surf == PLANE && test_cluster.decodeWithMWPMLoss(verbosity, 0, surf) == 1) {
 							num_correct ++; //correction successful
 						}
 					}
@@ -466,14 +468,14 @@ int main(int argc, const char *argv[]) {
 
 //### loop run:
 	//(INDEP)  ###(p_th 4.2% 53570232)
-		///./simulate -N INDEP -n 10000 --pmin 0 --pmax 0.06 --lmin 3 --Np 30 -v 1
+		///./simulate -N INDEP -n 10000 --pmin 0 --Np 30 --pmax 0.06 --lmin 3 -v 1
 	//(GATE) ###(p_th ~ 0.0043, pl ~ 0.1)
 		///./simulate -N GATE -n 10000 --pmin 0 --pmax 0.008 --lmin 3 -v 1
 	//(GATE_biased (1)) run \beta = 1000 (*p_ref = *)
 		///./simulate --qmin 1000 --pmin 0.01 --pmax 0.016 --Np 30 --Nq 1 -n 10000 --lmin 3 --lmax 21 -v 1 -N GATE_biased
 
 //######## test ########
-	///./simulate -N INDEP -n 10000 --pmin 0.06 --pmax 0.09 --lmin 3 -v 1 --test ###(pE ~0.8)
+	///./simulate -N INDEP -n 10000 --pmin 0.06 --pmax 0.09 --lmin 7 -v 1 --test ###(pE ~0.8)
 //######## timing test ########
 
 ///./simulate -s PLANE --pmin 0.01 --pmax 0.05  --Np 10 --Nq 1 -n 500 --lmin 3 -v 1

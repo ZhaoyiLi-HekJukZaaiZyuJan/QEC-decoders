@@ -1,3 +1,5 @@
+//defines the cluster and subcluster(2D) classes
+
 #pragma once
 
 # include "coord.hpp"
@@ -53,4 +55,31 @@ class cluster {
 	
 	int checkMeasurementOutcomeX1();
 	int checkMeasurementOutcomeX2();
+};
+
+class subcluster {
+	public:
+	subcoord S;
+	subcluster(const subcoord&, const subsurfacetype&);
+
+	void addNoise(const double&);
+	void clearNoise();
+	void addNoiseManually(const int&);
+
+	void printQubit();
+
+	void getx_vec();
+	void getXVec();
+	int decodeWithMWPM(int);
+
+	//	vector<int> surf;///decode
+	void getQubit();///decode
+	//	void printSurf();///decode
+	//	void surfaceCorrect(PerfectMatching*, const int&, const vector<int>&, const vector<int>&, const int&);///decode
+	private:
+	//high level structures
+	vector<int> z_error_pos;
+	vector<int> x_vec;
+	subsurfacetype this_surf = subPLANE;
+	
 };

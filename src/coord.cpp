@@ -113,28 +113,26 @@ ostream& operator<<(ostream& os, const coord& c) {
 	return os;
 }
 
-//coord comparison
-bool operator<(const coord& c1, const coord& c2) {
-	if (c1.x < c2.x) {
-		return true;
-	} else if (c1.x > c2.x) {
-		return false;
-	} else {
-		if (c1.y < c2.y){
-			return true;
-		} else if (c1.y > c2.y){
-			return false;
-		} else {
-			if (c1.z < c2.z) {
-				return true;
-			} else {
-				return false;
-			}
-		}
-	}
+subcoord::subcoord(const int& x, const int& y, const int& l){
+	this->x = x;
+	this->y = y;
+	this->l = l;
 }
 
-bool operator==(const coord& c1, const coord& c2) {
-	if (c1.x == c2.x && c1.y == c2.y && c1.z == c2.z && c1.l == c2.l) return true;
-	else return false;
+subcoord::subcoord(const int& c, const subcoord& S){
+	int L = S.x;
+	int M = S.y;
+	*this = {c % (M*L) % L, c % (M*L) / L, c % (M*L)};
+}
+
+int subcoord::hash(const subcoord& S){
+	int L = S.x;
+	int M = S.y;
+	return l*L*M + y*L + x;
+}
+
+void subcoord::operator=(const subcoord& c) {
+	x = c.x;
+	y = c.y;
+	l = c.l;
 }

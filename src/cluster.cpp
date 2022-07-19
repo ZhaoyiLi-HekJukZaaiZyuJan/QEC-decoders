@@ -927,3 +927,256 @@ int cluster::decodeWithMWPMLoss(int verbosity, bool make_corrections, surfacetyp
 	delete pm;
 	return parity;
 }
+
+
+//===================================================================//
+
+subcluster::subcluster(const subcoord& S, const subsurfacetype& this_surf){
+	this->S = S;
+	this->this_surf = this_surf;
+
+	vector<int> z_error_pos(2*S.x*S.y,1);
+	this->z_error_pos = z_error_pos;
+	vector<int> x_vec(S.x*S.y,1);
+	this->x_vec = x_vec;
+
+}
+
+// void subcluster::printQubit(){
+// 	vector<vector<string>> print_out;
+// 	for(int i = 0; i < 2*S.x; i++){
+// 		vector<string> a_line;
+// 		for(int j = 0; j < 2*S.y; j++){
+// 			a_line.push_back(" ");
+// 		}
+// 		print_out.push_back(a_line);
+// 	}
+// 	for(int c = 0; c < S.y*S.x; c++){ //print primal lattice
+// 		int x = c % S.y; //x subcoordinate
+// 		int y = c / S.y; //y subcoordinate
+// 		print_out[2 * y][2 * x + 1] = to_string(z_error_pos[c])[0];
+// 	}
+// 	for(int c = S.y*S.x; c < 2*S.y*S.x; c++){ //print dual lattice
+// 		int x = (c - S.y*S.x) % S.y; //x subcoordinate
+// 		int y = (c - S.y*S.x) / S.y; //y subcoordinate
+// 		print_out[2 * y +1][2 * x] = to_string(z_error_pos[c])[0];
+// 	}
+// 	for(int c = 0; c < S.y*S.x; c++){
+// 		int x = c % S.y; //x subcoordinate
+// 		int y = c / S.y; //y subcoordinate
+// 		print_out[2 * y][2 * x] = to_string(x_vec[c])[0];
+// 	}
+// 	printMatrix(print_out);
+// }
+
+void subcluster::printQubit(){
+	cout << "qubit:" <<endl;
+	vector<vector<string>> print_out;
+	for(int i = 0; i < 2*S.x; i++){
+		vector<string> a_line;
+		for(int j = 0; j < 2*S.y; j++){
+			a_line.push_back(" ");
+		}
+		print_out.push_back(a_line);
+	}
+	for(int c = 0; c < S.y*S.x; c++){ //print primal lattice
+		int x = c % S.y; //x subcoordinate
+		int y = c / S.y; //y subcoordinate
+		if (z_error_pos[c] > 0) {
+			// print_out[2 * y][2 * x + 1] = "\033[1;33mX\033[0m";
+		} else {
+			print_out[2 * y][2 * x + 1] = "\033[1;96mZ\033[0m";
+		}
+	}
+	for(int c = S.y*S.x; c < 2*S.y*S.x; c++){ //print dual lattice
+		int x = (c - S.y*S.x) % S.y; //x subcoordinate
+		int y = (c - S.y*S.x) / S.y; //y subcoordinate
+		if (z_error_pos[c] > 0) {
+			// print_out[2 * y +1][2 * x] = "\033[1;33mX\033[0m";
+		} else {
+			print_out[2 * y +1][2 * x] = "\033[1;96mZ\033[0m";
+		}
+	}
+	for(int c = 0; c < S.y*S.x; c++){//print x (green) measurements
+		int x = c % S.y; //x subcoordinate
+		int y = c / S.y; //y subcoordinate
+		if (x_vec[c] > 0) {
+			print_out[2 * y][2 * x] = "◯";
+		} else {
+			print_out[2 * y][2 * x] = "\033[1;92m⊕\033[0m";
+		}
+	}
+	printMatrix(print_out);
+}
+
+void subcluster::addNoise(const double& p){
+	random_device rd;
+	mt19937 engine{rd()};
+	uniform_real_distribution<> dist(0.0, 1.0);
+
+	//uncorrelated error distribution for all physical qubits
+	for (int i = 0; i < z_error_pos.size(); i++) {
+		if(dist(engine) < p) {
+			z_error_pos[i] = -1;
+		} else {
+			z_error_pos[i] = 1;
+		}
+	}
+	if (this_surf == subPLANE) {//correction for PLANE removal of boundary errors
+		for (int i = 0; i < S.x; i++){
+			z_error_pos[S.y*S.x + S.y*i] = 1;
+		}
+		for (int i = 0; i < S.y; i++){
+			z_error_pos[2*S.y*S.x - i - 1] = 1;
+		}
+	}
+}
+
+void subcluster::addNoiseManually(const int& c){
+	z_error_pos[c] *= -1;
+}
+
+void subcluster::clearNoise(){
+	for (int i = 0; i < z_error_pos.size(); i++) {
+		z_error_pos[i] = 1;
+	}
+}
+
+
+void subcluster::getx_vec(){
+	for (int c = 0; c < x_vec.size(); c++) {//measurement of subvertex operator
+		subvertex asubvertex = subvertex(c,S);
+		x_vec[c] = 1;
+		for (int pos = 0; pos < 4; pos ++) {
+			if (z_error_pos[asubvertex.partial[pos]] == -1) {
+				x_vec[c] *= -1;
+			}
+		}
+	}
+}
+
+
+int subcluster::decodeWithMWPM(int verbose = 0){
+	//PAIR MATCHING
+
+    vector<int> subvertexPosition;//actual (non boundary) verteces to be matched
+
+    for (int c = 0 ; c < x_vec.size(); c++) {
+        if (x_vec[c] == -1) {
+			if(this_surf == subPLANE && c%S.y == 0){//only take the ones in the PLANE
+				continue;
+			}
+            subvertexPosition.push_back(c);
+        }
+    }
+	
+	int vertices_num = subvertexPosition.size(), matches_num, edges_num;
+
+	if (this_surf == subTORUS) {
+		matches_num = vertices_num;
+		edges_num = vertices_num * (vertices_num - 1)/2;
+	} else if (this_surf == subPLANE){
+		matches_num = 2 * vertices_num;
+		edges_num = vertices_num * (vertices_num - 1) + vertices_num;
+	}
+
+    PerfectMatching *pm = new PerfectMatching(matches_num, edges_num);
+    struct PerfectMatching::Options options;
+    options.verbose = false;
+    pm->options = options;
+
+	vector<int> boundary_nodes; //vector to keep track of boundary nodes
+	
+    for (int i = 0; i < vertices_num; i++) {
+        int c1 = subvertexPosition[i];
+		if (this_surf == subPLANE) {// add in the boundary nodes
+			int x1 = c1%S.y;
+			int y1 = c1/S.y;
+			if (x1 * 2 <= S.y) { // use left boundary
+				boundary_nodes.push_back(-x1);
+				pm->AddEdge(i, i + vertices_num, x1);
+			} else{ //use right boundary
+				boundary_nodes.push_back(S.y - x1);
+				pm->AddEdge(i, i + vertices_num, S.y - x1);
+			}
+		}
+        for (int j = i + 1; j < vertices_num; j++) {
+            int c2 = subvertexPosition[j];
+			pm->AddEdge(i,j,getTaxicabDistance(S, c1, c2, this_surf));
+        }
+    }
+	if (this_surf == subPLANE) {//add in the interconnection of the boundary nodes
+		for (int i = vertices_num; i < 2 * vertices_num; i++) {
+			for (int j = i + 1; j < 2 * vertices_num; j++) {
+				pm->AddEdge(i,j,0);
+			}
+		}
+	}
+	//solve the graph using MWPM decoder
+	pm->Solve();
+
+	int parity1 = 1;
+	int parity2 = 1;
+
+	if (this_surf == subPLANE){
+		for (int i = 0; i < vertices_num; i++) {
+			if (pm->GetMatch(i) == i + vertices_num && boundary_nodes[i] > 0) { //matched to right boundary
+				parity1 *= -1;
+			}
+		} 
+	}
+
+	//checking first logical qubit \bar{Z}_1
+	if (this_surf == subTORUS){
+		vector<int> matchPosition; //matching vertex of vertexPosition respectively
+		for (int i = 0; i < vertices_num; i++) {
+			
+			int aC = subvertexPosition[i];
+			int bC = subvertexPosition[pm->GetMatch(i)];// position of vertexa's match, vertexb
+
+			matchPosition.push_back(bC);
+			int x1 = aC % S.x;
+			int x2 = bC % S.x;
+			if (!((2*abs(x1 - x2) > S.x && x1 < x2))){  //crossed boundary
+				parity1 *= -1;
+			}
+		}
+	}
+
+	for (int i = 0; i < S.y; i++){//errors on right boundary
+		parity1 *= z_error_pos[(S.x*i) + (S.x - 1)];
+	}
+
+	// checking second logical qubit \bar{Z}_2
+	if (this_surf == subTORUS){
+		vector<int> matchPosition; //matching vertex of vertexPosition respectively
+		for (int i = 0; i < vertices_num; i++) {
+			
+			int aC = subvertexPosition[i];
+			int bC = subvertexPosition[pm->GetMatch(i)];// position of vertexa's match, vertexb
+
+			matchPosition.push_back(bC);
+			int y1 = aC / S.x;
+			int y2 = bC / S.x;
+			if (!((2*abs(y1 - y2) > S.x && y1 < y2))){  //crossed boundary
+				parity2 *= -1;
+			}
+		}
+	}
+
+	for (int i = 0; i < S.y; i++){//errors on right boundary
+		parity2 *= z_error_pos[S.x*S.y + (S.y-1)*S.x + i];
+	}
+	
+	int parity;
+	if (this_surf== subPLANE){
+		parity = parity1;
+
+	}else if (this_surf == subTORUS){
+		parity = (parity1+1)/2*(parity2+1)/2;
+	}
+
+	delete pm;
+	return parity;
+}
+

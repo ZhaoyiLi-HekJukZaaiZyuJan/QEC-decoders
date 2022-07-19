@@ -18,10 +18,16 @@ struct coord{
 	int getFaceQubits(const coord&, const int&);
 };
 
+struct subcoord{
+	int x,y,l;
+	subcoord(){}
+	subcoord(const int&, const int&, const int&);
+//		subcoord(const int&);
+	
+	subcoord(const int& c, const subcoord&);
+	int hash(const subcoord&);
+	void operator=(const subcoord&);
+};
+
 //print coord
 ostream& operator<<(ostream&, const coord&);
-
-//coord comparison
-bool operator<(const coord&, const coord&);
-
-bool operator==(const coord&, const coord&);

@@ -10,3 +10,11 @@ struct vertex {
 	int c;
 	vector<int> partial;
 };
+
+struct subvertex {
+	subvertex(){}
+	subvertex(const int& hash, const subcoord&);
+	int x;
+	int y;
+	vector<int> partial;
+};

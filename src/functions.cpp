@@ -35,6 +35,27 @@ ostream& operator<< (ostream& os,surfacetype & surf){
 
 //===================================================================//
 
+istream& operator>> (istream& is, subsurfacetype& aSurf){
+	string str;
+	is >> str;
+	if (str == "subPLANE") aSurf = subPLANE;
+	else if (str == "subTORUS") aSurf = subTORUS;
+	else;
+	return is;
+}
+string To_string(subsurfacetype& surf){
+	if (surf == subPLANE) return "subPLANE";
+	else if (surf == subTORUS) return "subTORUS";
+	return "";
+}
+
+ostream& operator<< (ostream& os,subsurfacetype & surf){
+	os << To_string(surf);
+	return os;
+}
+
+//===================================================================//
+
 istream& operator>> (istream& is, concattype& concat){
 	string str;
 	is >> str;
@@ -144,7 +165,6 @@ typedef function<pair<double, double>(double, double)> noisemodelfunc;
 
 //################################## other functions ##############################
 
-//
 coord getTaxicabDisplacement(const coord& S, const int& c1, const int& c2, const surfacetype& surf){  //
 	coord C1(c1,S);
 	coord C2(c2,S);
@@ -213,4 +233,105 @@ int getTaxicabDistanceChunks(const coord& S, const vector<int>& chunk1, const ve
 		}
 	}
 	return min_dist;
+}
+
+subcoord getTaxicabDisplacement(const subcoord& S, const int& c1, const int& c2, const subsurfacetype& surf){  // compute taxicab distance between two points with given coordinates
+	int L = S.x, M = S.y, x1 = subcoord(c1,S).x, x2 = subcoord(c2,S).x, y1 = subcoord(c1,S).y, y2 = subcoord(c2,S).y;
+
+	if (surf == subTORUS) {
+		int x_dist, y_dist, x_relative_pos, y_relative_pos;
+		x_dist = min(M-abs(x1 - x2), abs(x1 - x2));
+		y_dist = min(L-abs(y1 - y2), abs(y1 - y2));
+
+		//replace this part with displacement function
+		if (x_dist == 0) { //two vertices on same x
+			x_relative_pos = 0;
+
+		} else if ((x_dist == abs(x1 - x2) && x1 < x2) ||
+				   (x_dist == M - abs(x1 - x2) && x1 > x2)){
+			x_relative_pos = 1;
+		} else {
+			x_relative_pos = -1;
+		}
+
+		if (y_dist == 0) { //two vertices on same y
+			y_relative_pos = 0;
+		} else if ((y_dist == abs(y1 - y2) && y1 < y2) ||
+				   (y_dist == L - abs(y1 - y2) && y1 > y2)){
+			y_relative_pos = 1;
+
+		} else {
+			y_relative_pos = -1;
+		}
+		return {x_relative_pos * x_dist, y_relative_pos * y_dist,0};
+
+	} else if (surf == subPLANE){
+		return {x2 - x1, y2 - y1, 0};
+	} else{
+		return {0,0,0};
+	}
+}
+
+int getTaxicabDistance(const subcoord& S, const int& c1, const int& c2, const subsurfacetype& surf){  // compute taxicab distance between two cubes, given their cube numbers
+	int L = S.x, M = S.y, x1 = subcoord(c1,S).x, x2 = subcoord(c2,S).x, y1 = subcoord(c1,S).y, y2 = subcoord(c2,S).y;
+
+	if (surf == subTORUS) {
+		return min(abs(x1 - x2), M-abs(x1 - x2)) + min(abs(y1 - y2), L-abs(y1 - y2));
+	} else if (surf == subPLANE){
+		return abs(x1 - x2) + abs(y1 - y2);
+	} else{
+		return 0;
+	}
+}
+
+//coord comparison
+bool operator<(const coord& c1, const coord& c2) {
+	if (c1.x < c2.x) {
+		return true;
+	} else if (c1.x > c2.x) {
+		return false;
+	} else {
+		if (c1.y < c2.y){
+			return true;
+		} else if (c1.y > c2.y){
+			return false;
+		} else {
+			if (c1.z < c2.z) {
+				return true;
+			} else {
+				return false;
+			}
+		}
+	}
+}
+
+bool operator==(const coord& c1, const coord& c2) {
+	if (c1.x == c2.x && c1.y == c2.y && c1.z == c2.z && c1.l == c2.l) return true;
+	else return false;
+}
+
+//print subcoord
+ostream& operator<<(ostream& os, const subcoord& c) {
+	os << "(" << c.x << "," << c.y << ","  << "," << c.l << ")";
+	return os;
+}
+
+//coord comparison
+bool operator<(const subcoord& c1, const subcoord& c2) {
+	if (c1.x < c2.x) {
+		return true;
+	} else if (c1.x > c2.x) {
+		return false;
+	} else {
+		if (c1.y < c2.y){
+			return true;
+		} else {
+			return false;
+		}
+	}
+}
+
+bool operator==(const subcoord& c1, const subcoord& c2) {
+	if (c1.x == c2.x && c1.y == c2.y && c1.l == c2.l) return true;
+	else return false;
 }

@@ -1095,27 +1095,28 @@ int main(int argc, const char *argv[]) {
 	}
 	return return_value;
 }
+
 ///################ [[2,1,1]] ################
 //### GATE run: (*p_th = 0.7%*)
 
-//### INDEP run:
-	//(INDEP)  ### 311b (p_th 5.65% 56198801)
-		///./simulate -N INDEP -n 10000 --pmin 0.07 --pmax 0.13 --lmin 3 --Np 30 -v 1
-	//(INDEP)  ### 311a (p_th 10.20(3 54447916))
-	//(GATE)   ### 311b (p_th ~ (0.325%, 3.4%) 56178855)
-		///./simulate -N GATE -n 1000 --pmin 0 --pmax 0.005 --lmin 3 --Np 30 -v 1
-		//     ### 311a 
-	//(GATE_biased (1)) run \beta = 1000 (*p_ref = 1.37% ArXiv 1308.4776 *)
-		///./simulate --qmin 1000 --pmin 0.01 --pmax 0.016 --Np 30 --Nq 1 -n 10000 --lmin 3 --lmax 21 -v 1 -N GATE_biased
+//######## INDEP run:
+	// 	(INDEP)  ### 311b (p_th 5.65% 56198801)
+	// 	./simulate -N INDEP -n 10000 --pmin 0.07 --pmax 0.13 --lmin 3 --Np 30 -v 1
+	// 	(INDEP)  ### 311a (p_th 10.20(3) 54447916)
+	// 	(GATE)   ### 311b (p_th (0.325%, 3.4%) 56178855)
+	// 	./simulate -N GATE -n 1000 --pmin 0 --pmax 0.005 --lmin 3 --Np 30 -v 1
+	//	     	 ### 311a
+	// 	(GATE_biased) run \beta = 1000 (*p_ref = 1.37% ArXiv 1308.4776 *)
+	// 	./simulate --qmin 1000 --pmin 0.01 --pmax 0.016 --Np 30 --Nq 1 -n 10000 --lmin 3 --lmax 21 -v 1 -N GATE_biased
 
 //######## test ########
-	///./simulate -N INDEP -n 10000 --pmin 0.06 --pmax 0.09 --lmin 3 -v 1 --test ###(pE ~0.8)
+	// 	./simulate -N INDEP -n 10000 --pmin 0.06 --pmax 0.09 --lmin 3 -v 1 --test
 //######## timing test ########
-///./simulate -s PLANE --pmin 0.01 --pmax 0.05  --Np 10 --Nq 1 -n 500 --lmin 3 -v 1
+	// 	./simulate -s PLANE --pmin 0.01 --pmax 0.05  --Np 10 --Nq 1 -n 500 --lmin 3 -v 1
 
 //######## test large ########
-	//(simple time)
-	///./simulate -s PLANE --pmin 0.01 --pmax 0.05 --Np 10 --Nq 1 -n 500 --test 1 --lmin 20 -v 2
+	//	(simple time)
+	// 	./simulate -s PLANE --pmin 0.01 --pmax 0.05 --Np 10 --Nq 1 -n 500 --test 1 --lmin 20 -v 2
 
-	//(long time)
-	//./simulate -s PLANE --qmin 0.05 --qmax 0.05 --pmin 0.004 --pmax 0.008  --Np 10 --Nq 1 -n 500 --lmin 30 -v 1 --test 1
+	//	(long time)
+	// 	./simulate -s PLANE --qmin 0.05 --qmax 0.05 --pmin 0.004 --pmax 0.008  --Np 10 --Nq 1 -n 500 --lmin 30 -v 1 --test 1

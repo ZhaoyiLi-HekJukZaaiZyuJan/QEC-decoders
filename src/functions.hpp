@@ -20,6 +20,11 @@ string To_string(surfacetype&);
 ostream& operator<< (ostream&, surfacetype&);
 
 //===================================================================//
+istream& operator>> (istream&, subsurfacetype&);
+string To_string(subsurfacetype&);
+ostream& operator<< (ostream&, subsurfacetype&);
+
+//===================================================================//
 istream& operator>> (istream&, concattype&);
 string To_string(concattype&);
 ostream& operator<< (ostream&, concattype&);
@@ -47,6 +52,7 @@ extern std::map<lossmodel, lossmodelfunc> LOSSMODELMAP;
 istream& operator>> (istream&, noisemodel&);
 string To_string(noisemodel&);
 ostream& operator<< (ostream&, noisemodel&);
+
 typedef function<pair<double, double>(double,double)> noisemodelfunc;
 
 extern int myint;
@@ -65,8 +71,29 @@ void printMatrix(const vector<T>);
 
 #include "functions.tpp"
 
+//======================== 3D Distance =========================//
+
 coord getTaxicabDisplacement(const coord&, const int&, const int&, const surfacetype&);
 
 int getTaxicabDistance(const coord&, const coord&, const coord&, const surfacetype&);
 
 int getTaxicabDistanceChunks(const coord&, const vector<int>&, const vector<int>&, const surfacetype&);
+
+//======================== 2D Distance =========================//
+
+subcoord getTaxicabDisplacement(const subcoord& S, const int&, const int&, const subsurfacetype&);
+
+int getTaxicabDistance(const subcoord&, const int&, const int&, const subsurfacetype&);
+
+void testDecoding(const int L, const int M, const double p, subsurfacetype);
+
+void loopDecoding(const int L_range, const int trials, const string, subsurfacetype, bool);
+
+//======================== Coordinate comparison =========================//
+bool operator<(const coord&, const coord&);
+
+bool operator==(const coord&, const coord&);
+
+bool operator<(const subcoord&, const subcoord&);
+
+bool operator==(const subcoord&, const subcoord&);
