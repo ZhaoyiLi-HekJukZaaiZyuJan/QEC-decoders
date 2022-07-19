@@ -1,4 +1,4 @@
-//########################## [[4,2,2]] Toric Code ##########################
+//########################## [[7,3,1]] Steane Toric Code ##########################
 //########################## main.cpp ##########################
 
 //system libraries
@@ -29,21 +29,21 @@ clock_t start_t = clock();
 auto start = chrono::steady_clock::now();
 
 class Cluster : public cluster {
-	vector<vector<int>> c_error_pos_422;
+	vector<vector<int>> c_error_pos_concat;
 	public:
-	void addPauli422(const double&, const double&, const int&seed=0);
-	void addNoise(const double&, const double&, const noisemodel, const lossmodel, const int& seed = 0);
-	void addGateNoise(const double&, const int& seed=0);
-	Cluster(const coord&, const surfacetype&);
-	void decode422(int);
+	void addPauliSteane(const double&, const double&, const int&, const int& seed = 0);
+	void addNoise(const double&, const double&, const int&, const noisemodel, const lossmodel, const int& seed = 0);
+	void addGateNoise(const double&, const int&, const int& seed = 0);
+	Cluster(const coord&, const surfacetype&, const int&);
+	void decodeConcat(const concattype&, const int&, const int& verbosity = 0);
 };
 
-Cluster::Cluster(const coord& S, const surfacetype& this_surf) : cluster(S, this_surf){ //this is needed for subclass initializers
-	vector<vector<int>> c_error_pos_422(3*S.x*S.y*S.z, vector<int>(4, 1));
-	this->c_error_pos_422 = c_error_pos_422;
+Cluster::Cluster(const coord& S, const surfacetype& this_surf, const int& d) : cluster(S, this_surf){ //this is needed for subclass initializers
+	vector<vector<int>> c_error_pos_concat(3*S.x*S.y*S.z, vector<int>(d, 1));
+	this->c_error_pos_concat = c_error_pos_concat;
 }
 
-void Cluster::addPauli422(const double & p, const double & q, const int& seed){
+void Cluster::addPauliSteane(const double & p, const double & q, const int&d, const int& seed){
 	//Total heuristic Probabilities
 	random_device rd;
 	mt19937 engine{rd()};
@@ -53,13 +53,13 @@ void Cluster::addPauli422(const double & p, const double & q, const int& seed){
 	uniform_real_distribution<> dist(0.0, 1.0);
 	
 	//Initialization of error operator
-	//Error Model 1: uncorrelated error distribution for all physical z_error_poss
+	//Error Model 1: uncorrelated error distribution for all physical c_error_poss
 	for (int c = 0; c < 3*S.x*S.y*S.z; c++) {
-		for (int k = 0; k < 4; k++) {
+		for (int k = 0; k < d; k++) {
 			if(dist(engine) < p) {
-				c_error_pos_422[c][k] = -1;
+				c_error_pos_concat[c][k] = -1;
 			} else {
-				c_error_pos_422[c][k] = 1;
+				c_error_pos_concat[c][k] = 1;
 			}
 		}
 	}
@@ -68,20 +68,20 @@ void Cluster::addPauli422(const double & p, const double & q, const int& seed){
 	//		vertex aVertex(c, S); //get vertices as when getting x_vec's
 	//		for (int pos = 0; pos < 6; pos = pos + 2) {
 	//			if(dist(engine) < NOISEMODELMAP[N](p).second) {
-	//				z_error_pos[aVertex.partial[pos]] *= -1;
-	//				z_error_pos[aVertex.partial[pos + 1]] *= -1;
+	//				c_error_pos[aVertex.partial[pos]] *= -1;
+	//				c_error_pos[aVertex.partial[pos + 1]] *= -1;
 	//			}
 	//		}
 	//	}
 	//	for (int c = 0; c < 3*S.x*S.y*S.z; c++) {
 	//		coord C(c, S);
 	//		if(this_surf == PLANE && ((C.l == 1 && (C.y == S.y - 1 || C.x == 0)) ||(C.l == 2 && (C.z == S.z - 1 || C.x == 0)))){
-	//			z_error_pos[c] = 1;
+	//			c_error_pos[c] = 1;
 	//		}//	for planar code, remove errors on left, more, and lower boundaries to create edges.
 	//	}
 }
 
-void Cluster::addGateNoise(const double & p, const int& seed){
+void Cluster::addGateNoise(const double & p, const int& d, const int& seed){
 	//Total heuristic Probabilities
 	random_device rd;
 	mt19937 engine{rd()};
@@ -91,117 +91,82 @@ void Cluster::addGateNoise(const double & p, const int& seed){
 	uniform_real_distribution<> dist(0.0, 1.0);
 	
 	//Initialization of error operator
-	//Error Model 1: uncorrelated error distribution for all physical z_error_poss
+	//Error Model 1: uncorrelated error distribution for all physical c_error_poss
 	for (int c = 0; c < 3*S.x*S.y*S.z; c++) {
-		for (int k = 0; k < 4; k++) {
-			if(dist(engine) < p*4/3) {
-				c_error_pos_422[c][k] = -1;
-			} else {
-				c_error_pos_422[c][k] = 1;
+		for (int k = 0; k < d; k++) {
+			for (int i = 0; i < 3; i++) { //p_S, p_M, p_P	
+				if(dist(engine) < p*2/3) {
+					c_error_pos_concat[c][k] = -1;
+				} else {
+					c_error_pos_concat[c][k] = 1;
+				}
 			}
+			
 		}
 	}
 	for (int c = 0; c < S.x*S.y*S.z; c++) {
 		coord C(c,S);
-		for (int i = 0; i < 4; i++) {//422
+		if (this_surf == PLANE && (C.z == S.z - 1 || C.y == S.y - 1)) {//remove boundary cubes
+			continue;
+		} if (this_surf == TORUS && C.z == S.z - 1){
+			continue;
+		}
+		for (int i = 0; i < d; i++) {//transversal code
 			for (int face = 0; face < 3; face ++) {
 				double p1 = dist(engine); //process 1 (black)
 				double p2 = dist(engine); //process 2 (pink)
 				double p3 = dist(engine); //process 3 (rose)
 				double p4 = dist(engine); //process 4 (purple)
 				
-				if (p*4/15 < p1 < p*8/15) { //black
-					c_error_pos_422[C.getFaceQubits(S, face, 0, 3)][i] *= -1;//3
+				if (p1 < p*4/15) {
+					c_error_pos_concat[C.getFaceQubits(S, face, 0, 3)][i] *= -1;//3
+				} else if (p*4/15 < p1 && p1 < p*8/15){
+					c_error_pos_concat[C.getFaceQubits(S, face, 0, 0)][i] *= -1;//0
+					c_error_pos_concat[C.getFaceQubits(S, face, 0, 1)][i] *= -1;//1
+					c_error_pos_concat[C.getFaceQubits(S, face, 0, 2)][i] *= -1;//2
+				} else if (p*8/15 < p1 && p1 < p*12/15){
+					c_error_pos_concat[C.getFaceQubits(S, face, 0, 0)][i] *= -1;//0
+					c_error_pos_concat[C.getFaceQubits(S, face, 0, 1)][i] *= -1;//1
+					c_error_pos_concat[C.getFaceQubits(S, face, 0, 2)][i] *= -1;//2
+					c_error_pos_concat[C.getFaceQubits(S, face, 0, 3)][i] *= -1;//3
 				}
 				
+				if (p2 < p*4/15) {
+					c_error_pos_concat[C.getFaceQubits(S, face, 0, 2)][i] *= -1;//2
+				} else if (p*4/15 < p2 && p2 < p*8/15) {
+					c_error_pos_concat[C.getFaceQubits(S, face, 0, 0)][i] *= -1;//0
+					c_error_pos_concat[C.getFaceQubits(S, face, 0, 1)][i] *= -1;//1
+				} else if (p*8/15 < p2 && p2 < p*12/15) {			
+					c_error_pos_concat[C.getFaceQubits(S, face, 0, 0)][i] *= -1;//0
+					c_error_pos_concat[C.getFaceQubits(S, face, 0, 1)][i] *= -1;//1
+					c_error_pos_concat[C.getFaceQubits(S, face, 0, 2)][i] *= -1;//2	
+				}
+				
+				if (p3 < p*4/15) {
+					c_error_pos_concat[C.getFaceQubits(S, face, 0, 1)][i] *= -1;//1
+				} else if (p*4/15 < p3 && p3 < p*8/15){
+					c_error_pos_concat[C.getFaceQubits(S, face, 0, 0)][i] *= -1;//0
+				} else if (p*8/15 < p3 && p3 < p*12/15){
+					c_error_pos_concat[C.getFaceQubits(S, face, 0, 0)][i] *= -1;//0
+					c_error_pos_concat[C.getFaceQubits(S, face, 0, 1)][i] *= -1;//1
+				}
+
 				if (p4 < p*8/15) { //purple
-					if (C.z % 2 == 1) {//even layer
-						c_error_pos_422[C.getFaceQubits(S, face, 0, 0)][i] *= -1;//0
-					} else {
-						c_error_pos_422[C.getFaceQubits(S, face, 0, 1)][i] *= -1;//1
-					}
-				}
-				
-				if ((p2 < p*4/15 && p1 >= p*4/15) || (p1 < p*4/15 && p2 >= p*4/15)) {
-					c_error_pos_422[C.getFaceQubits(S, face, 0, 0)][i] *= -1;//0
-					c_error_pos_422[C.getFaceQubits(S, face, 0, 1)][i] *= -1;//1
-					c_error_pos_422[C.getFaceQubits(S, face, 0, 2)][i] *= -1; //2
-				} else if (p*4/15 < p2 < p*8/15) {
-					c_error_pos_422[C.getFaceQubits(S, face, 0, 2)][i] *= -1;//2
-				} else if (p*8/15 < p2 < p*12/15) {
-					c_error_pos_422[C.getFaceQubits(S, face, 0, 1)][i] *= -1;//1
-					c_error_pos_422[C.getFaceQubits(S, face, 0, 0)][i] *= -1;//0
-				}
-				
-				if ((p3 < p*4/15 && C.z % 2 == 1) || (p*4/15 < p3 < p*8/15 && C.z % 2 == 0)) { //horizontal
-					c_error_pos_422[C.getFaceQubits(S, face, 0, 1)][i] *= -1;//1
-				} else if ((p3 < p*4/15 && C.z % 2 == 0) || (p*4/15 < p3 < p*8/15 && C.z % 2 == 1)){
-					c_error_pos_422[C.getFaceQubits(S, face, 0, 0)][i] *= -1;//0
-				} else if (p*8/15 < p3 < p*12/15){
-					c_error_pos_422[C.getFaceQubits(S, face, 0, 1)][i] *= -1;//1
-					c_error_pos_422[C.getFaceQubits(S, face, 0, 0)][i] *= -1;//0
+					c_error_pos_concat[C.getFaceQubits(S, face, 0, 0)][i] *= -1;//0
 				}
 			}
 		}
-			
-		//initialization errors X
-		for (int i = 0; i < 2; i++) {//422
-			for (int face = 0; face < 3; face ++) {
-				double pA1 = dist(engine); //process 1 (black)
-				double pA2 = dist(engine); //process 2 (pink)
-				
-				if (pA1 < p*4/3*(1-p*2/3)){ // Z H errors
-					for(int k=0 ; k <4; k++){
-						c_error_pos_422[C.getFaceQubits(S, face, 0, k)][i+2] *= -1;//0123
-					}
-				}
-				
-				if (pA2 < p*4/15){ // CZ Errors
-					for(int k=0 ; k <4; k++){
-						c_error_pos_422[C.getFaceQubits(S, face, 0, k)][i+2] *= -1;//0123
-					}
-				} else if (p*4/15 < pA2 < p*8/15){
-					for(int k=0 ; k <4; k++){
-						c_error_pos_422[C.getFaceQubits(S, face, 0, k)][i] *= -1;//0123
-					}
-				}
-			}
-		}
-			
-		//initialization errors X
-		for (int k =0; k<4; k++) {
-			for (int i = 0; i < 3; i = i + 2) {
-				for (int face = 0; face < 3; face ++) {
-					double pA1 = dist(engine); //process 1 (black)
-					double pA2 = dist(engine); //process 2 (pink)
-					double pA3 = dist(engine); //process 2 (pink)
-					
-					if (pA1 < p*2/3){ // Z H errors
-						c_error_pos_422[C.getFaceQubits(S, face, 0, k)][i+1] *= -1;//k
-					}
-					
-					if (pA2 < p*2/3){ // Z H errors
-						c_error_pos_422[C.getFaceQubits(S, face, 0, k)][i] *= -1;//k
-					}
-					
-					if (pA3 < p*4/15){ // CZ Errors
-						c_error_pos_422[C.getFaceQubits(S, face, 0, k)][i+1] *= -1;//k
-					} else if (p*4/15 < pA2 < p*8/15){
-						c_error_pos_422[C.getFaceQubits(S, face, 0, k)][i] *= -1;//k
-					}
-				}
-			}
-		}
+
 	}
 }
 
 //No seed used for seed = 0
-void Cluster::addNoise(const double & p, const double & q, const noisemodel N, const lossmodel L, const int& seed){
+void Cluster::addNoise(const double & p, const double & q, const int & d, const noisemodel N, const lossmodel L, const int& seed){
 	if (N == GATE) { //p:error probability, //q: bias
-		addGateNoise(p, seed);
+		addGateNoise(p, d, seed);
 	}
 	if (N != GATE && N != GATE_biased) {
-		addPauli422(NOISEMODELMAP[N](p,0).first, NOISEMODELMAP[N](p,0).second,  seed);
+		addPauliSteane(NOISEMODELMAP[N](p,0).first, NOISEMODELMAP[N](p,0).second,  d, seed);
 	} 
 
 	// Loss part
@@ -222,45 +187,115 @@ void Cluster::addNoise(const double & p, const double & q, const noisemodel N, c
 	}
 }
 
-void Cluster::decode422(int verbose = 0){
+void Cluster::decodeConcat(const concattype& con, const int& d, const int& verbosity){
 	//initialization loss and z_error
 	
-	for (int c = 0; c < 3*S.x*S.y*S.z; c++) {
-		//stabalizer measurement
-		int xxxx = 1; //stabalizer operator
-		
-		for (int k = 0; k < 4; k++) {
-			xxxx *= c_error_pos_422[c][k];
+	//Bacon-Shor decoder
+	
+	int l = sqrt(d);
+	if (con == ShorX || con == ShorZ) {
+		for (int c = 0; c < 3*S.x*S.y*S.z; c++) {
+			//stabalizer measurement
+			if (con == ShorX) {
+				c_error_pos[c] = 1;
+				vector<int> num_flip_sub(l,0);
+				for (int k_sub = 0; k_sub < l; k_sub++) {//pn
+					for (int k = 0; k < l; k++) {
+						num_flip_sub[k] += (c_error_pos_concat[c][k_sub + l * k] == -1 ? 1 : 0);
+					}
+				}
+				for (int k = 0; k < l; k++) {//pm
+					if (num_flip_sub[k] > l/2) {
+						c_error_pos[c] *= -1;
+						
+					}
+				}
+			} else if (con == ShorZ) {
+				int num_flip = 0;
+				vector<int> num_flip_sub(l,1);
+				for (int k_sub = 0; k_sub < l; k_sub++) {//pm
+					for (int k = 0; k < l; k++) {
+						num_flip_sub[k] *= c_error_pos_concat[c][k_sub + l * k];
+					}
+				}
+				for (int k = 0; k < l; k++) {//pn
+					if (num_flip_sub[k] == -1) {
+						num_flip ++;
+					}
+				}
+				if (num_flip <= l/2) {
+					c_error_pos[c] = 1;
+				} else {
+					c_error_pos[c] = -1;
+				}
+			}
 		}
-		c_loss_pos[c] = xxxx;
-		
-		//pauli measurement
-		int xxii = 1; //\bar{X} logical pauli operator
-		//get z_error_pos
-		for (int k = 0; k < 2; k++) {
-			xxii *= c_error_pos_422[c][k];
+	} else if(con == Steane){
+		//Stean code decoder
+		for (int c = 0; c < 3*S.x*S.y*S.z; c++) {
+			//stabalizer measurement
+			int g1 = c_error_pos_concat[c][3]*c_error_pos_concat[c][4]*c_error_pos_concat[c][5]*c_error_pos_concat[c][6];
+			int g2 = c_error_pos_concat[c][1]*c_error_pos_concat[c][2]*c_error_pos_concat[c][5]*c_error_pos_concat[c][6];
+			int g3 = c_error_pos_concat[c][0]*c_error_pos_concat[c][2]*c_error_pos_concat[c][4]*c_error_pos_concat[c][6];
+			
+			if (g1 == 1 & g2 == 1 && g3 ==-1) {
+				c_error_pos_concat[c][0] *= -1;
+			} else if(g1 == 1 & g2 == -1 && g3 ==1){
+				c_error_pos_concat[c][1] *= -1;
+			} else if (g1 == 1 & g2 == -1 && g3 ==-1){
+				c_error_pos_concat[c][2] *= -1;
+			} else if (g1 == -1 & g2 == 1 && g3 ==1){
+				c_error_pos_concat[c][3] *= -1;
+			} else if (g1 == -1 & g2 == 1 && g3 ==-1){
+				c_error_pos_concat[c][4] *= -1;
+			} else if (g1 == -1 & g2 == -1 && g3 ==1){
+				c_error_pos_concat[c][5] *= -1;
+			} else if (g1 == -1 & g2 == -1 && g3 ==-1){
+				c_error_pos_concat[c][6] *= -1;
+			}
+			for (int k = 0; k < 7; k++) {
+				c_error_pos[c] *= c_error_pos_concat[c][k];
+	//				c_loss_pos[c] *= c_error_pos_concat[c][k];
+			}
 		}
-		c_error_pos[c] = xxii;
+	} else if(con == S422){
+		//422 code decoder
+		for (int c = 0; c < 3*S.x*S.y*S.z; c++) {
+			//stabalizer measurement
+			int g1 = c_error_pos_concat[c][0]*c_error_pos_concat[c][1];
+			int g2 = c_error_pos_concat[c][0]*c_error_pos_concat[c][2];
+			
+			if (g1 == 1 & g2 == -1) {
+				c_error_pos_concat[c][2] *= -1;
+			} else if(g1 == -1 & g2 == 1){
+				c_error_pos_concat[c][1] *= -1;
+			} else if (g1 == -1 & g2 == -1){
+				c_error_pos_concat[c][0] *= -1;
+			}
+			for (int k = 0; k < 2; k++) {
+				c_error_pos[c] *= c_error_pos_concat[c][k];
+			}
+		}
 	}
 	for (int c = 0; c < 3*S.x*S.y*S.z; c++) {
 		coord C(c, S);
-		if(this_surf == PLANE && ((C.l == 1 && (C.y == S.y - 1 || C.x == 0)) || (C.l == 2 && (C.z == S.z - 1 || C.x == 0)))){
+		if(this_surf == PLANE && ((C.l == 1 && (C.y == S.y - 1 || C.x == 0)) ||(C.l == 2 && (C.z == S.z - 1 || C.x == 0)))){
 			c_error_pos[c] = 1;
 			c_loss_pos[c] = 1;
 		}//	for planar code, remove errors on left, more, and lower boundaries to create edges.
 	}
 }
 
-void testDecoding(Cluster& test_cluster, const double& p, const double& q, const int& seed, surfacetype surf, noisemodel N, lossmodel L, int verbosity){
+void testDecoding(Cluster& test_cluster, const double& p, const double& q, const int& seed, surfacetype surf, concattype con, int d, noisemodel N, lossmodel L, int verbosity){
 	start_t = clock();
 	//add noise
 	if (N == GATE) {
 		test_cluster.addGateNoise(p, seed);
 	} else {
-		test_cluster.addNoise(p, q, N, L, seed);
+		test_cluster.addNoise(p, q, d, N, L, seed);
 	}
 	
-	test_cluster.decode422();
+	test_cluster.decodeConcat(con, d);
 	
 	cout << "t(Generation):"<< double(clock()-start_t)/CLOCKS_PER_SEC << endl;//timing
 	start_t = clock();
@@ -272,8 +307,10 @@ void testDecoding(Cluster& test_cluster, const double& p, const double& q, const
 	}
 	
 	if (verbosity >= 1){
+		cout << "SuperChunks:" << endl;
 		test_cluster.printSuperChunks();
 		test_cluster.getSurf();
+		cout << "Surf:" << endl;
 		test_cluster.printSurf();
 		cout << "t(getSuperChunks):" << double(clock()-start_t)/CLOCKS_PER_SEC << endl;//timing
 		start_t = clock();
@@ -289,7 +326,7 @@ void testDecoding(Cluster& test_cluster, const double& p, const double& q, const
 	cout << "X1 check:" << parity <<endl;
 }
 
-int loopDecoding(const int lmin, const int lmax, const int trials, const double pmin, const double pmax, const int Np, const double qmin, const double qmax, const int Nq, const string fname, surfacetype surf, noisemodel N, lossmodel L, int verbosity, int thread, int out){
+int loopDecoding(const int lmin, const int lmax, const int trials, const double pmin, const double pmax, const int Np, const double qmin, const double qmax, const int Nq, const string fname, surfacetype surf, concattype con, int d, noisemodel N, lossmodel L, int verbosity, int thread, int out){
 	cout << "hardware_concurrency" << thread::hardware_concurrency() <<endl;
 	ofstream outfile;
 	if(out){
@@ -297,8 +334,8 @@ int loopDecoding(const int lmin, const int lmax, const int trials, const double 
 		outfile.open(fname);
 		outfile << "L,p_error,num_success\n";
 	}
-	int binp = 0 == Np ? 1:Np;
-	int binq = 0 == Nq ? 1:Nq;
+	int binp = 0 == Np ? 1: Np;
+	int binq = 0 == Nq ? 1: Nq;
 	int num_correct;
 	
 	for (int j = 0; j <= Nq; j ++) {
@@ -324,7 +361,7 @@ int loopDecoding(const int lmin, const int lmax, const int trials, const double 
 							} else {
 								test_cluster.addNoise(p, q, N, L, 0);
 							}
-							test_cluster.decode422();
+							test_cluster.decodeSteane();
 							try {
 								test_cluster.getSuperChunks();
 							} catch (...) {
@@ -342,7 +379,7 @@ int loopDecoding(const int lmin, const int lmax, const int trials, const double 
 						} else {
 							test_cluster.addNoise(p, q, N, L, 0);
 						}
-						test_cluster.decode422();
+						test_cluster.decodeSteane();
 						try {
 							test_cluster.getSuperChunks();
 						} catch (...) {
@@ -380,11 +417,12 @@ int loopDecoding(const int lmin, const int lmax, const int trials, const double 
 int main(int argc, const char *argv[]) {
 	string fname;
 	surfacetype s;
+	concattype con;
 	noisemodel N;
 	lossmodel L;
 	bool test, use_env, thread, make_corrections, out;
 	int verbosity, return_value = 0;
-	int lmin, lmax, n, Np, Nq, seed, times;
+	int lmin, lmax, n, Np, Nq, seed, times, d;
 	float pmin, pmax, qmin, qmax;
 	
 	//getting options
@@ -396,9 +434,11 @@ int main(int argc, const char *argv[]) {
 	("fname", "filename", cxxopts::value(fname)->default_value(""))
 	("out", "output in this directory as an .out file", cxxopts::value(out)->default_value("0"))
 	("s", "surface type", cxxopts::value(s)->default_value("PLANE"))
+	("con", "concat type", cxxopts::value(con)->default_value("Steane"))
 	("lmin", "Minimal size of mesh", cxxopts::value(lmin)->default_value("3"))
 	("lmax", "Maximal size of mesh", cxxopts::value(lmax)->default_value("17"))
 	("n", "Number of trials", cxxopts::value(n)->default_value("100"))
+	("d", "Concatenation size", cxxopts::value(d)->default_value("d"))
 	
 	("N", "noise model", cxxopts::value(N)->default_value("GATE"))
 	("Np", "z error p Points", cxxopts::value(Np)->default_value("10"))
@@ -420,46 +460,49 @@ int main(int argc, const char *argv[]) {
 	options.parse(argc, argv);
 	
 	//outputing options
-	cout << "hardware_concurrency" << thread::hardware_concurrency() << endl;
+	cout << "hardware_concurrency:" << thread::hardware_concurrency() << endl;
 	if (use_env) {
 		cout << "SLURM_CPUS_PER_TASK:" << atoi(getenv("SLURM_CPUS_PER_TASK")) << endl;
 	}
 	cout << "lmin:" << lmin << ";lmax:" << lmax << endl;
-	cout << "pmin:" << pmin << ";pmax:" << pmax << ";Np" << Np << endl;
-	cout << "qmin:" << qmin << ";qmax:" << qmax << ";Nq" << Nq << endl;
-	cout << "n:" << n << "seed:" << seed << ";thread" << thread << endl;
+	cout << "pmin:" << pmin << ";pmax:" << pmax << ";nP:" << Np << endl;
+	cout << "qmin:" << qmin << ";qmax:" << qmax << ";nPl:" << Nq << endl;
+	cout << "n:" << n << "seed:" << seed << ";thread:" << thread << endl;
+	cout << "noise model:" << N << ";loss model:" << L <<endl;
 	
 	
 	if (fname == "") {
 		fname = "l=" + to_string(lmin) + ",P=(" + to_string(pmin).substr(3,2) + "," + to_string(pmax).substr(3,2) + "),n=" +to_string(n) + to_string(s) + "," + to_string(N) + ".out";
 	}
 	if (test) {
+		Cluster test_cluster({lmin,lmin,lmin,0}, s, d);
 		int i = 0;
 		do {
-			testDecoding(pmin, qmin, seed, s, N, L, verbosity);
+			testDecoding(test_cluster, pmin, qmin, seed, s, con, d, N, L, verbosity);
 			i++;
 		}
 		while (i < times);
 	} else{
-		return_value = loopDecoding(lmin, lmax, n, pmin, pmax, Np-1, qmin, qmax, Nq-1, fname, s, N, L, verbosity, thread, out);
+		return_value = loopDecoding(lmin, lmax, n, pmin, pmax, Np-1, qmin, qmax, Nq-1, fname, s, con, d, N, L, verbosity, thread, out);
 	}
 	return return_value;
 }
-///################ [[4,2,2]] ################
+///################ Concat ################
 
 ///######## 1D run ########
 
 //### loop run:
-	//(INDEP)  ###(p_th ~ 0.045 heuristics)
-		///./simulate -N INDEP -n 10000 --pmin 0 --pmax 0.06 --lmin 3 --Np 30 -v 1
-	//(GATE) ###(p_th ~)
-		///./simulate -N GATE -n 1000 --pmin 0.09 --pmax 0.012 --lmin 3 -v 1
-	//(GATE_biased (1)) run \beta = 1000 (*p_ref = *)
+	//(INDEP) 
+		///./simulate -N INDEP -n 10000 --pmin 0 --Np 30 --pmax 0.06 --lmin 3 -v 1
+	//(GATE) 
+		///./simulate -N GATE -n 10000 --pmin 0 --pmax 0.008 --lmin 3 -v 1
+	//(GATE_biased (1))
 		///./simulate --qmin 1000 --pmin 0.01 --pmax 0.016 --Np 30 --Nq 1 -n 10000 --lmin 3 --lmax 21 -v 1 -N GATE_biased
 
 //######## test ########
-	///./simulate -N INDEP -n 10000 --pmin 0.06 --pmax 0.09 --lmin 3 -v 1 --test ###(pE ~0.8)
+	///./simulate -N INDEP -n 10000 --pmin 0.06 --pmax 0.09 --lmin 7 -v 1 --test ###(pE ~0.8)
 //######## timing test ########
+
 ///./simulate -s PLANE --pmin 0.01 --pmax 0.05  --Np 10 --Nq 1 -n 500 --lmin 3 -v 1
 
 //######## test large ########

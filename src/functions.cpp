@@ -61,12 +61,20 @@ istream& operator>> (istream& is, concattype& concat){
 	is >> str;
 	if (str == "concat311a") concat = concat311a;
 	else if (str == "concat311b") concat = concat311b;
+	else if (str == "Steane") concat = Steane;
+	else if (str == "ShorX") concat = ShorX;
+	else if (str == "ShorZ") concat = ShorZ;
+	else if (str == "S422") concat = S422;
 	else;
 	return is;
 }
 string To_string(concattype& concat){
 	if (concat == concat311a) return "concat311a";
 	else if (concat == concat311b) return "concat311b";
+	else if (concat == Steane) return "Steane";
+	else if (concat == ShorX) return "ShorX";
+	else if (concat == ShorZ) return "ShorZ";
+	else if (concat == S422) return "S422";
 	else;
 	return "";
 }

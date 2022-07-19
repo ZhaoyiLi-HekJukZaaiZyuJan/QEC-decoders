@@ -1,0 +1,8 @@
+#!/bin/tcsh
+#BSUB -q long
+#BSUB -W 24:00 #runtime limit
+#BSUB -J My_array[1-100]     #job name AND job array
+## BSUB -o /scratch/users/ladmon/3D/results/%J_%I_terminal.out  #output - %J is the job-id %I is the job-array index
+## BSUB -e /scratch/users/ladmon/3D/results/%J_%I_terminal.err  #error - %J is the job-id %I is the job-array index b
+
+./simulate -N INDEP -n 1000 --pmin 0 --pmax 0.06 --lmin 3 --Np 30 -v 1 --lmax 17 -N INDEP --fname "/u/xo/ladmon/results/${LSB_JOBID}_${LSB_JOBINDEX}.out" --out
