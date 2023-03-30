@@ -1,5 +1,5 @@
 <h1>QEC-decoders</h1>
-<p>Various decoders for topological quantum error correction</p>
+<p>This repository contains several decoders for topological quantum error correction. The decoders are implemented in C++ and use the Blossom V algorithm for maximum-weight perfect matching.</p>
 <h2>Usage</h2>
 <ol>
   <li>Clean the object files by running <code>make clean</code> in the <code>src/blossom5-v2.05.src</code> directory:</li>
