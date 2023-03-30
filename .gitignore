@@ -1,1 +1,5 @@
+# Ignore all .o files
 *.o
+
+# Exclude .gitignore file
+!.gitignore
