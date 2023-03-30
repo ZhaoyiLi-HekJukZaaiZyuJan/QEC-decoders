@@ -2,6 +2,10 @@
 <p>This repository contains several decoders for topological quantum error correction. The decoders are implemented in C++ and use the Blossom V algorithm for maximum-weight perfect matching.</p>
 <h2>Usage</h2>
 <ol>
+  <li>Make the src files:</li>
+    <pre>cd src/libs/blossom5-v2.05.src </pre>
+    <pre>make</pre>
+    <pre>cd ../../.. </pre>
   <li>Make the project files:</li>
     <pre>make</pre>
   <li>Run the executable:</li>
