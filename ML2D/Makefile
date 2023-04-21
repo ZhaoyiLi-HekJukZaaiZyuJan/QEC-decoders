@@ -11,9 +11,9 @@ CFLAGS := -std=c++17 -ltensorflow -lpthread -no-pie -fmax-errors=5 -O3 \
 		-I ../src \
 		-I ../src/libs/ \
 		-I ../src/libs/blossom5-v2.05.src \
-		# -I ~/libtensorflow2/include/ \
-		# -I ../src/libs/cppflow-master/include \
-		# -I ../src/libs/cppflow-master/include/cppflow
+		-I ~/libtensorflow2/include/ \
+		-I ../src/libs/cppflow-master/include \
+		-I ../src/libs/cppflow-master/include/cppflow
 CXX ?= g++
 INCLUDES :=
 LIBDIR :=
@@ -21,8 +21,8 @@ LIBDIR :=
 all: simulate
 
 simulate: ${OBJS}
-	export LIBRARY_PATH=$(LIBRARY_PATH):~/libtensorflow2/lib; \
-	export DYLD_LIBRARY_PATH=$(DYLD_LIBRARY_PATH):~/libtensorflow2/lib; \
+	export LIBRARY_PATH=$(LIBRARY_PATH):~/libtensorflow2/lib:/usr/local/Cellar/libtensorflow/lib; \
+	export DYLD_LIBRARY_PATH=$(DYLD_LIBRARY_PATH):~/libtensorflow2/lib:/usr/local/Cellar/libtensorflow/lib; \
 	$(CXX) $(CFLAGS) ${BLOSSOM_OBJECTS} -o $@ ${OBJS} ${LIBS} \
 
 .cpp.o:

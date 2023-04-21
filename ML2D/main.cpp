@@ -237,14 +237,14 @@ void generator(const int trials, const int L_min, const double P_min, const doub
 				int c;
 				uniform_int_distribution<int> dist2(0,3);
 				if (h < testcluster.S.x*testcluster.S.y){
-					subvertex aVertex(h,testcluster.S);
-					c = aVertex.physical_qubits[dist2(engine)];
+					subvertex_x aVertex(h,testcluster.S);
+					c = aVertex.partial[dist2(engine)];
 				} else {
-					testcluster.Subvertex_z aVertex(h-testcluster.S.x*testcluster.S.y);
-					c = aVertex.physical_qubits[dist2(engine)];
+					subvertex_z aVertex(h-testcluster.S.x*testcluster.S.y,testcluster.S);
+					c = aVertex.partial[dist2(engine)];
 				}
 				
-				testcluster.Subcoord C(c);
+				subcoord C(c,testcluster.S);
 				// testcluster.printQubit();
 			    // testcluster.printQubit(c);
 
