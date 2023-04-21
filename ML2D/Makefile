@@ -1,24 +1,34 @@
-DEPS=blossom *.cpp
+#definition of a recursive wildcard "ref: https://stackoverflow.com/questions/2483182/recursive-wildcards-in-gnu-make"
+rwildcard=$(foreach d,$(wildcard $(1:=/*)),$(call rwildcard,$d,$2) $(filter $(subst *,%,$2),$d))
 
-all: blossom simulate
-# g++  libs/blossom5-v2.05.src/MinCost/*.o libs/blossom5-v2.05.src/GEOM/*.o libs/blossom5-v2.05.src/*.o -o cubic cubic.cpp
+DIRS := . ../src
+SOURCES := $(foreach dir, $(DIRS), $(wildcard $(dir)/*.cpp))
+#search for all object files in blossom5 folder
+BLOSSOM_OBJECTS:= $(call rwildcard, ../src/libs/blossom5-v2.05.src,*.o)
+OBJS := $(patsubst %.cpp, %.o, $(SOURCES))
 
+CFLAGS := -std=c++17 -ltensorflow -lpthread -no-pie -fmax-errors=5 -O3 \
+		-I ../src \
+		-I ../src/libs/ \
+		-I ../src/libs/blossom5-v2.05.src \
+		# -I ~/libtensorflow2/include/ \
+		# -I ../src/libs/cppflow-master/include \
+		# -I ../src/libs/cppflow-master/include/cppflow
+CXX ?= g++
+INCLUDES :=
+LIBDIR :=
 
-blossom:
-	cd libs/blossom5-v2.05.src/ && module load gcc/10.1.0 || true && make
+all: simulate
 
+simulate: ${OBJS}
+	export LIBRARY_PATH=$(LIBRARY_PATH):~/libtensorflow2/lib; \
+	export DYLD_LIBRARY_PATH=$(DYLD_LIBRARY_PATH):~/libtensorflow2/lib; \
+	$(CXX) $(CFLAGS) ${BLOSSOM_OBJECTS} -o $@ ${OBJS} ${LIBS} \
 
-simulate: $(DEPS)
-		export LIBRARY_PATH=$(LIBRARY_PATH):~/libtensorflow2/lib; \
-		export DYLD_LIBRARY_PATH=$(DYLD_LIBRARY_PATH):~/libtensorflow2/lib; \
-		g++ -std=c++17 -I libs/cxxopts/ -I libs/blossom5-v2.05.src/ \
-		libs/blossom5-v2.05.src/PMduals.o libs/blossom5-v2.05.src/PMexpand.o  \
-		libs/blossom5-v2.05.src/PMinit.o libs/blossom5-v2.05.src/PMinterface.o \
-		libs/blossom5-v2.05.src/PMmain.o libs/blossom5-v2.05.src/PMrepair.o \
-		libs/blossom5-v2.05.src/PMshrink.o libs/blossom5-v2.05.src/misc.o \
-		libs/blossom5-v2.05.src/MinCost/MinCost.o libs/blossom5-v2.05.src/GEOM/GPMinit.o \
-		libs/blossom5-v2.05.src/GEOM/GPMinterface.o libs/blossom5-v2.05.src/GEOM/GPMkdtree.o \
-		libs/blossom5-v2.05.src/GEOM/GPMmain.o -O3 \
-		-I ~/libtensorflow2/include/ \
-		-I libs/cppflow-master/include/ \
-		main.cpp -o simulate -ltensorflow -lpthread -no-pie
+.cpp.o:
+	$(CXX) $(CFLAGS) ${INCLUDES} $< -c -o $@ | echo $<
+
+clean:
+	rm -f ${OBJS} simulate
+
+		
