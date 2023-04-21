@@ -34,14 +34,15 @@ void testDecoding(const int L, const int M, const double p, subsurfacetype surf=
 
 }
 
+//unfinished
 void SweepTestDecoding(const int L, const int M, const int& l, subsurfacetype surf=subTORUS){
-	subcluster testcluster({L,L,0},surf);
-	int success = 0;
-	int trials = 0;
-	testcluster.innerSweepTestDecoding(l, l, -1, success, trials);
-	cout << "success:" << success << endl;
-	cout << "fail:" << trials-success << endl;
-	cout << "trials:" << trials << endl;
+	// subcluster testcluster({L,L,0},surf);
+	// int success = 0;
+	// int trials = 0;
+	// testcluster.innerSweepTestDecoding(l, l, -1, success, trials);
+	// cout << "success:" << success << endl;
+	// cout << "fail:" << trials-success << endl;
+	// cout << "trials:" << trials << endl;
 }
 
 
