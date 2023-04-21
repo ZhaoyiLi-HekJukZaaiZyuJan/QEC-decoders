@@ -1,2 +1,4 @@
 # Ignore all .o files
 *.o
+
+.DS_Store
