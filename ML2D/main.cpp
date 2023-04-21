@@ -2,10 +2,30 @@
 //===================   ML Assisted decoding (make)   =====================//
 //=====================        main.cpp     =========================//
 //===================================================================//
+
+//system libraries
+#include <fstream>
+#include <functional>
+#include <algorithm>
+#include <utility>
+#include <iomanip>
+#include <assert.h>
+#include <time.h>
+
 #include "main.hpp"
-#include "thread_for.hpp"
 #include <filesystem>
 #include <iostream>
+
+//personal libraries
+#include <thread_for.hpp>
+#include <cxxopts/cxxopts.hpp>
+#include <PerfectMatching.h>
+#include <GEOM/GeomPerfectMatching.h>
+
+//project libraries
+#include <vertex.hpp> //directory added through -I in compiler
+#include <functions.hpp>
+#include <cluster.hpp>
 
 using namespace std;
 namespace fs = filesystem;
