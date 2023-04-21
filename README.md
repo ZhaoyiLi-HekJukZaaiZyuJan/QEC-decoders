@@ -48,6 +48,7 @@ bazel test tensorflow/test/...
   <li>--pmax: Maximal Z error probability. Default is 0.008.</li>
   <li>-c, --code_model: Code model. Default is 2D.</li>
   <li>--test: Test switch. Default is 0.</li>
+    <p>This flag enables testing mode, which will run a single decoding simulation for the given size of the mesh and a specified error probability. The simulation process will be printed to the console. The default value of this flag is 0, which means testing mode is disabled.</p>
   <li>--sweep: Sweep switch. Default is 0.</li>
   <li>-N, --noise_model: Noise model. Default is INDEP.</li>
   <li>--seed: Seed switch. Default is 0.</li>
@@ -74,3 +75,27 @@ bazel test tensorflow/test/...
 </ul>
 <p>If no output filename is specified, the program will create a default output file name based on the input parameters.</p>
 </section>
+
+
+<h2>Examples</h2>
+
+Here are some examples of how to use the program with different command line arguments:
+
+<pre>
+./simulate -s subTORUS --pmin 0 --pmax 0.18  --Np 25 -n 1000 --Lmin 5 --Lmax 5 -v 1 -d ~/ML/ -m "model,L=5(7),layer=3x128,epochs=10000,p=" --decode_with_NN
+</pre>
+rcx
+This command will run simulations for a subTORUS surface with a range of error probabilities between 0 and 0.18, which passes the transition error rate of around 0.15, using 25 p points and 1000 trials per point. The size of the mesh will be fixed at 5, and a neural network model with architecture 3x128 and 10000 epochs will be used for decoding. The results will be saved to the specified output directory with a filename that includes the model and input parameters. [expand a bit on the directory ]
+
+<pre>
+./simulate -s subTORUS --pmin 0 --pmax 0.12  --Np 25 -n 1000 --Lmin 3 --Lmax 20 -v 1 -d ~/ML/  --fname test.out
+</pre>
+<pre>
+./simulate -s subTORUS --pmin 0.036 --Np 10 --Lmin 10 -v 1 --test --make_corrections -d /scratch/users/ladmon/ML/ -m "model_h,L=5(7),layer=3x128,epochs=100000,p=0.036" --binary
+</pre>
+<pre>
+./simulate -s subTORUS --pmin 0.036 --Np 10 --Lmin 10 -v 1 --test --make_corrections -m "model,L=5(7),layer=5x512,epochs=1000,p=0.04" --binary
+</pre>
+<pre>
+./simulate -s subTORUS --pmin 0.02 --pmax 0.02  --Np 20 -n 1 --Lmin 7 -v 1 --generate -d ~/ML
+</pre>
