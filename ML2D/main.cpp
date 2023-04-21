@@ -123,7 +123,7 @@ void subcluster::addError(){ //for debugging
 	z_error_pos[C2.hash()] *= -1;
 
 
-	if (this_surf == PLANE) {//correction for PLANE removal of boundary errors
+	if (this_surf == subPLANE) {//correction for subPLANE removal of boundary errors
 		for (int i = 0; i < S.x; i++){
 			z_error_pos[S.y*S.x + S.y*i] = 1;
 			x_error_pos[S.y*S.x + S.y*i] = 1;
@@ -175,7 +175,7 @@ void subcluster::addNoise(const double& p, const noisemodel N, const int& seed=0
 		}
 	}
 	
-	if (this_surf == PLANE) {//correction for PLANE removal of boundary errors
+	if (this_surf == subPLANE) {//correction for subPLANE removal of boundary errors
 		for (int i = 0; i < S.x; i++){
 			z_error_pos[S.y*S.x + S.y*i] = 1;
 			x_error_pos[S.y*S.x + S.y*i] = 1;
@@ -387,7 +387,7 @@ vector<int> subcluster::decodeWithMWPMLoss(int verbose = 0, bool dir = 0, bool m
 			c_prime += stabs.size()/2;
 		}
 		if (stabs[c_prime] == -1) {
-			if(this_surf == PLANE && c_prime  % S.y == 0){//only take the ones in the PLANE
+			if(this_surf == subPLANE && c_prime  % S.y == 0){//only take the ones in the subPLANE
 				continue;
 			}
 			vertexPosition.push_back(c_prime);
@@ -397,10 +397,10 @@ vector<int> subcluster::decodeWithMWPMLoss(int verbose = 0, bool dir = 0, bool m
 	int vertices_num = vertexPosition.size();
 	int matches_num;
 	int edges_num;
-	if (this_surf == TORUS) {
+	if (this_surf == subTORUS) {
 		matches_num = vertices_num;
 		edges_num = vertices_num * (vertices_num - 1)/2;
-	} else if (this_surf == PLANE){
+	} else if (this_surf == subPLANE){
 		matches_num = 2 * vertices_num;
 		edges_num = vertices_num * (vertices_num - 1) + vertices_num;
 	}
@@ -414,7 +414,7 @@ vector<int> subcluster::decodeWithMWPMLoss(int verbose = 0, bool dir = 0, bool m
 	
 	for (int i = 0; i < vertices_num; i++) {
 		int c1 = vertexPosition[i];
-		if (this_surf == PLANE) {// (x方向不同 需改)add in the boundary nodes
+		if (this_surf == subPLANE) {// (x方向不同 需改)add in the boundary nodes
 			int x1 = c1 %(S.x * S.y) % S.y;
 			int y1 = c1 %(S.x * S.y) / S.y;
 			if (x1 * 2 <= S.y) { // use left boundary
@@ -430,7 +430,7 @@ vector<int> subcluster::decodeWithMWPMLoss(int verbose = 0, bool dir = 0, bool m
 			pm->AddEdge(i,j,getTaxicabDistance(S, c1, c2, this_surf));
 		}
 	}
-	if (this_surf == PLANE) {//add in the interconnection of the boundary nodes
+	if (this_surf == subPLANE) {//add in the interconnection of the boundary nodes
 		for (int i = vertices_num; i < 2 * vertices_num; i++) {
 			for (int j = i + 1; j < 2 * vertices_num; j++) {
 				pm->AddEdge(i,j,0);
@@ -442,7 +442,7 @@ vector<int> subcluster::decodeWithMWPMLoss(int verbose = 0, bool dir = 0, bool m
 	
 	vector<int>parity{1,1};
 	
-	if (this_surf == PLANE) {
+	if (this_surf == subPLANE) {
 		for (int i = 0; i < vertices_num; i++) {
 			if (pm->GetMatch(i) == i + vertices_num && boundary_nodes[i] <= 0) { //matched to left boundary
 				parity[1] *= -1;
@@ -466,7 +466,7 @@ vector<int> subcluster::decodeWithMWPMLoss(int verbose = 0, bool dir = 0, bool m
 				subvertex_x bVertex;
 				
 				
-				if (this_surf == TORUS || (this_surf == PLANE && pm->GetMatch(i) < vertices_num)){
+				if (this_surf == subTORUS || (this_surf == subPLANE && pm->GetMatch(i) < vertices_num)){
 					int c2 = vertexPosition[pm->GetMatch(i)];// position of vertexa's match, vertexb
 					matchPosition.push_back(c2);
 					if (count(matchPosition.begin(), matchPosition.end(), c1)) continue; //Prevent recounting of vertices
@@ -512,7 +512,7 @@ vector<int> subcluster::decodeWithMWPMLoss(int verbose = 0, bool dir = 0, bool m
 				subvertex_z aVertex(c1 - S.x*S.y);
 				subvertex_z bVertex;
 				
-				if (this_surf == TORUS || (this_surf == PLANE && pm->GetMatch(i) < vertices_num)){
+				if (this_surf == subTORUS || (this_surf == subPLANE && pm->GetMatch(i) < vertices_num)){
 					int c2 = vertexPosition[pm->GetMatch(i)];// position of vertexa's match, vertexb
 					matchPosition.push_back(c2);
 					if (count(matchPosition.begin(), matchPosition.end(), c1)) continue; //Prevent recounting of vertices
@@ -570,7 +570,7 @@ vector<int> subcluster::decodeWithMWPMLoss(int verbose = 0, bool dir = 0, bool m
 		}
 	}
 	
-	if(this_surf == TORUS){
+	if(this_surf == subTORUS){
 		int result = 1;
 		if (!dir){
 			for (int i = 0; i < S.x ; i++) { // Check X1 operator
@@ -619,9 +619,9 @@ void testDecoding(cppflow::model model, const int L, const int M, const double p
 	testcluster.getz_measurements();
 	testcluster.printQubit();
 	
-	if (surf == PLANE && testcluster.decodeWithMWPMLoss(1,dir,make_corrections)[0] == 1) {
+	if (surf == subPLANE && testcluster.decodeWithMWPMLoss(1,dir,make_corrections)[0] == 1) {
 		cout << "success" << endl; //correction successful
-	} else if (surf == TORUS) {
+	} else if (surf == subTORUS) {
 		vector<int> parity = testcluster.decodeWithMWPMLoss(1,dir,make_corrections);
 		if (parity[0] == 1 && parity[1] == 1) {
 			cout << "success" << endl;
@@ -676,7 +676,7 @@ void loopDecoding(string directory, string model_name, const int L_min, const in
 							testcluster.getx_measurements();
 							testcluster.getz_measurements();
 							
-							if (surf == PLANE && testcluster.decodeWithMWPMLoss(verbose, dir, 0)[0] == 1) {
+							if (surf == subPLANE && testcluster.decodeWithMWPMLoss(verbose, dir, 0)[0] == 1) {
 								num_add++; //correction successful
 							} else{
 								vector<int> parity = testcluster.decodeWithMWPMLoss(verbose, dir, 1);
@@ -697,7 +697,7 @@ void loopDecoding(string directory, string model_name, const int L_min, const in
 						testcluster.getx_measurements();
 						testcluster.getz_measurements();
 						
-						if (surf == PLANE && testcluster.decodeWithMWPMLoss(verbose, dir)[0] == 1) {
+						if (surf == subPLANE && testcluster.decodeWithMWPMLoss(verbose, dir)[0] == 1) {
 							num_correct ++; //correction successful
 						} else{
 								vector<int> parity = testcluster.decodeWithMWPMLoss(verbose, dir, 1);
@@ -717,7 +717,7 @@ void loopDecoding(string directory, string model_name, const int L_min, const in
 							testcluster.getx_measurements();
 							testcluster.getz_measurements();
 							
-							if (surf == PLANE && testcluster.decodeWithMWPMLoss(verbose,dir, 0)[0] == 1) {
+							if (surf == subPLANE && testcluster.decodeWithMWPMLoss(verbose,dir, 0)[0] == 1) {
 								num_add++; //correction successful
 							} else{
 								vector<int> parity = testcluster.decodeWithMWPMLoss(verbose, dir, 1);
@@ -734,7 +734,7 @@ void loopDecoding(string directory, string model_name, const int L_min, const in
 						testcluster.getx_measurements();
 						testcluster.getz_measurements();
 						
-						if (surf == PLANE && testcluster.decodeWithMWPMLoss(verbose, dir)[0] == 1) {
+						if (surf == subPLANE && testcluster.decodeWithMWPMLoss(verbose, dir)[0] == 1) {
 							num_correct ++; //correction successful
 						} else{
 								vector<int> parity = testcluster.decodeWithMWPMLoss(verbose, dir, 1);
@@ -862,7 +862,7 @@ int main(int argc, const char *argv[]) {
 	("f, fname", "Output filename", cxxopts::value(fname))
 	("d, directory", "model directory", cxxopts::value(directory)->default_value("/users/VanLadmon/OneDrive - Stanford/PHYSICS/Research/Patrick/ML make/"))
 	("m, model", "model parent name", cxxopts::value(model_name)->default_value("model,L=5(7),layer=5x512,epochs=1000,p="))
-	("s, surf_type", "Surface type", cxxopts::value(s)->default_value("TORUS"))
+	("s, surf_type", "Surface type", cxxopts::value(s)->default_value("subTORUS"))
 	("Lmin", "Minimal size of mesh", cxxopts::value(L_min)->default_value("3"))
 	("Lmax", "Maximal size of mesh", cxxopts::value(L_max)->default_value("17"))
 	("n", "Number of trials", cxxopts::value(n)->default_value("10000"))
@@ -924,10 +924,10 @@ int main(int argc, const char *argv[]) {
 	return 1;
 }
 
-//./simulate -s TORUS --pmin 0 --pmax 0.18  --Np 25 -n 1000 --Lmin 5 --Lmax 5 -v 1 -d ~/ML/ -m "model,L=5(7),layer=3x128,epochs=10000,p=" --decode_with_NN
-//./simulate -s TORUS --pmin 0 --pmax 0.12  --Np 25 -n 1000 --Lmin 3 --Lmax 20 -v 1 -d ~/ML/  --fname test.out
+//./simulate -s subTORUS --pmin 0 --pmax 0.18  --Np 25 -n 1000 --Lmin 5 --Lmax 5 -v 1 -d ~/ML/ -m "model,L=5(7),layer=3x128,epochs=10000,p=" --decode_with_NN
+//./simulate -s subTORUS --pmin 0 --pmax 0.12  --Np 25 -n 1000 --Lmin 3 --Lmax 20 -v 1 -d ~/ML/  --fname test.out
 
-//./simulate -s TORUS --pmin 0.036 --Np 10 --Lmin 10 -v 1 --test --make_corrections -d /scratch/users/ladmon/ML/ -m "model_h,L=5(7),layer=3x128,epochs=100000,p=0.036" --binary
-//./simulate -s TORUS --pmin 0.02 --pmax 0.02  --Np 20 -n 1 --Lmin 7 -v 1 --generate -d ~/ML
+//./simulate -s subTORUS --pmin 0.036 --Np 10 --Lmin 10 -v 1 --test --make_corrections -d /scratch/users/ladmon/ML/ -m "model_h,L=5(7),layer=3x128,epochs=100000,p=0.036" --binary
+//./simulate -s subTORUS --pmin 0.02 --pmax 0.02  --Np 20 -n 1 --Lmin 7 -v 1 --generate -d ~/ML
 
 //model,L=5(7),layer=5x512,epochs=1000,p=0.1068
