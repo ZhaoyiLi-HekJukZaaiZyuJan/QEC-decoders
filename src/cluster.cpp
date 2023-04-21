@@ -1043,7 +1043,7 @@ void subcluster::clearNoise(){
 }
 
 
-void subcluster::getx_vec(){
+void subcluster::getStabs(){
 	for (int c = 0; c < x_vec.size(); c++) {//measurement of subvertex operator
 		subvertex asubvertex = subvertex(c,S);
 		x_vec[c] = 1;

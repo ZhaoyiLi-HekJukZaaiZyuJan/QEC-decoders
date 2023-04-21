@@ -68,8 +68,7 @@ class subcluster {
 
 	void printQubit();
 
-	void getx_vec();
-	void getXVec();
+	void getStabs();
 	int decodeWithMWPM(int);
 
 	//	vector<int> surf;///decode
