@@ -41,11 +41,13 @@ void testDecoding(cppflow::model model, const int L, const int M, const double p
 	
 	testcluster.getx_measurements();
 	testcluster.getz_measurements();
+	cout << "addiing errors" << endl;
 	testcluster.printQubit();
 	
 	testcluster.decodeWithNN(model, binary_output, verbose, cutoff);
 	testcluster.getx_measurements();
 	testcluster.getz_measurements();
+	cout << "NN error correction" << endl;
 	testcluster.printQubit();
 	
 	if (surf == subPLANE && testcluster.decodeWithMWPMLoss(1,dir,make_corrections)[0] == 1) {
@@ -288,8 +290,8 @@ int main(int argc, const char *argv[]) {
 	
 	cxxopts::Options options(*argv,"2D Simulator");
 	options.add_options()
-	("f, fname", "Output filename", cxxopts::value(fname))
-	("d, directory", "model directory", cxxopts::value(directory)->default_value("/users/VanLadmon/OneDrive - Stanford/PHYSICS/Research/Patrick/ML make/"))
+	("f, fname", "Output filename", cxxopts::value(fname)) 
+	("d, directory", "model directory", cxxopts::value(directory)->default_value("../src/")) //enter the directory that contains the folder /models
 	("m, model", "model parent name", cxxopts::value(model_name)->default_value("model,L=5(7),layer=5x512,epochs=1000,p="))
 	("s, surf_type", "Surface type", cxxopts::value(s)->default_value("subTORUS"))
 	("Lmin", "Minimal size of mesh", cxxopts::value(L_min)->default_value("3"))
@@ -357,6 +359,7 @@ int main(int argc, const char *argv[]) {
 //./simulate -s subTORUS --pmin 0 --pmax 0.12  --Np 25 -n 1000 --Lmin 3 --Lmax 20 -v 1 -d ~/ML/  --fname test.out
 
 //./simulate -s subTORUS --pmin 0.036 --Np 10 --Lmin 10 -v 1 --test --make_corrections -d /scratch/users/ladmon/ML/ -m "model_h,L=5(7),layer=3x128,epochs=100000,p=0.036" --binary
+//./simulate -s subTORUS --pmin 0.036 --Np 10 --Lmin 10 -v 1 --test --make_corrections -m "model,L=5(7),layer=5x512,epochs=1000,p=0.04" --binary
 //./simulate -s subTORUS --pmin 0.02 --pmax 0.02  --Np 20 -n 1 --Lmin 7 -v 1 --generate -d ~/ML
 
 //model,L=5(7),layer=5x512,epochs=1000,p=0.1068
