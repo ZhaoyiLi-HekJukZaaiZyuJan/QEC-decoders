@@ -4,6 +4,9 @@
 
 #include <random>
 
+
+static int window_size = 5;//occurred twice, plz clean
+
 //for chunk graphics
 std::vector<string> colorvector= { "\033[1;31m◯\033[0m","\033[1;32m◯\033[0m","\033[1;33m◯\033[0m","\033[1;34m◯\033[0m","\033[1;35m◯\033[0m","\033[1;36m◯\033[0m","\033[1;37m◯\033[0m"};
 
@@ -937,8 +940,11 @@ subcluster::subcluster(const subcoord& S, const subsurfacetype& this_surf){
 
 	vector<int> z_error_pos(2*S.x*S.y,1);
 	this->z_error_pos = z_error_pos;
-	vector<int> x_vec(S.x*S.y,1);
-	this->x_vec = x_vec;
+	//only used for some tests in ML2D
+	vector<int> x_error_pos(2*S.x*S.y,1);
+	this->x_error_pos = x_error_pos;
+	vector<int> stabs(2*S.x*S.y,1);
+	this->stabs = stabs;
 
 }
 
@@ -964,7 +970,7 @@ subcluster::subcluster(const subcoord& S, const subsurfacetype& this_surf){
 // 	for(int c = 0; c < S.y*S.x; c++){
 // 		int x = c % S.y; //x subcoordinate
 // 		int y = c / S.y; //y subcoordinate
-// 		print_out[2 * y][2 * x] = to_string(x_vec[c])[0];
+// 		print_out[2 * y][2 * x] = to_string(stabs[c])[0];
 // 	}
 // 	printMatrix(print_out);
 // }
@@ -1000,13 +1006,124 @@ void subcluster::printQubit(){
 	for(int c = 0; c < S.y*S.x; c++){//print x (green) measurements
 		int x = c % S.y; //x subcoordinate
 		int y = c / S.y; //y subcoordinate
-		if (x_vec[c] > 0) {
+		if (stabs[c] > 0) {
 			print_out[2 * y][2 * x] = "◯";
 		} else {
 			print_out[2 * y][2 * x] = "\033[1;92m⊕\033[0m";
 		}
 	}
 	printMatrix(print_out);
+}
+
+void subcluster::printQubitWithWindow(int window_center = -1){
+	cout << "qubit:" <<endl;
+	vector<vector<string>> print_out;
+	for(int i = 0; i < 2*S.x; i++){
+		vector<string> a_line;
+		for(int j = 0; j < 2*S.y; j++){
+			a_line.push_back(" ");
+		}
+		print_out.push_back(a_line);
+	}
+	for(int c = 0; c < S.y*S.x; c++){ //print primal lattice
+		int x = c % S.y; //x subcoordinate
+		int y = c / S.y; //y subcoordinate
+		if (z_error_pos[c] > 0) {
+			if (x_error_pos[c] > 0) {
+				print_out[2 * y][2 * x + 1] = " ";
+			} else {
+				print_out[2 * y][2 * x + 1] = "\033[1;33mX\033[0m";
+			}
+		} else {
+			if (x_error_pos[c] > 0) {
+				print_out[2 * y][2 * x + 1] = "\033[1;96mZ\033[0m";
+			} else {
+				print_out[2 * y][2 * x + 1] = "\033[1;32mY\033[0m";
+			}
+		}
+	}
+	for(int c = S.y*S.x; c < 2*S.y*S.x; c++){ //print dual lattice
+		int x = (c - S.y*S.x) % S.y; //x subcoordinate
+		int y = (c - S.y*S.x) / S.y; //y subcoordinate
+		if (z_error_pos[c] > 0) {
+			if (x_error_pos[c] > 0) {
+				print_out[2 * y +1][2 * x] = " ";
+			} else {
+				print_out[2 * y +1][2 * x] = "\033[1;33mX\033[0m";
+			}
+		} else {
+			if (x_error_pos[c] > 0) {
+				print_out[2 * y +1][2 * x] = "\033[1;96mZ\033[0m";
+			} else {
+				print_out[2 * y +1][2 * x] = "\033[1;32mY\033[0m";
+			}
+		}
+	}
+	for(int c = 0; c < S.y*S.x; c++){//print x (green) measurements
+		int x = c % S.y; //x subcoordinate
+		int y = c / S.y; //y subcoordinate
+		if (stabs[c] > 0) {
+			print_out[2 * y][2 * x] = "◯";
+		} else {
+			print_out[2 * y][2 * x] = "\033[1;92m⊕\033[0m";
+		}
+	}
+	for(int c = 0; c < S.y*S.x; c++){//print z measurements
+		int x = c % S.y; //x subcoordinate
+		int y = c / S.y; //y subcoordinate
+		if (stabs[c + S.y*S.x] > 0) {
+			print_out[2 * y + 1][2 * x + 1] = "□";
+		} else {
+			print_out[2 * y + 1][2 * x + 1] = "\033[1;95m⊟\033[0m";
+		}
+	}
+	if (window_center != -1){
+		subcoord C(window_center,S);
+		if (!C.l) { //0 qubits
+			for (int d = 0; d < 2*window_size*window_size; d++) {
+				subcoord D(d,subcoord(window_size,window_size,1));
+				if(!D.l){
+					print_out[2 * divmod(C.y+D.y-window_size/2,S.y)][2 * divmod(C.x+D.x-window_size/2+1,S.x)] = "W";
+				} else {
+					print_out[2 * divmod(C.y+D.y-window_size/2,S.y) + 1][2 * divmod(C.x+D.x-window_size/2,S.x) + 1] = "W"; //purple
+				}
+			}
+		} else { //1 qubits
+			for (int d = 0; d < 2*window_size*window_size; d++) {
+				subcoord D(d,subcoord(window_size,window_size,1));
+				if(!D.l){
+					print_out[2 * divmod(C.y+D.y-window_size/2,S.y) + 1][2 * divmod(C.x+D.x-window_size/2,S.x) + 1] = "W";//purple
+				} else {
+					print_out[2 * divmod(C.y+D.y-window_size/2+1,S.y)][2 * divmod(C.x+D.x-window_size/2,S.x)] = "W";
+				}
+			}
+		}
+	}
+	
+	printMatrix(print_out);
+}
+
+
+//manually add error for debugging
+void subcluster::addError(){ //for debugging
+	//Total heuristic Probabilities	
+	//add errors manually here
+	subcoord C1(3,3,0);
+	z_error_pos[C1.hash(S)] *= -1;
+	subcoord C2(3,1,1);
+	z_error_pos[C2.hash(S)] *= -1;
+
+
+	if (this_surf == subPLANE) {//correction for subPLANE removal of boundary errors
+		for (int i = 0; i < S.x; i++){
+			z_error_pos[S.y*S.x + S.y*i] = 1;
+			x_error_pos[S.y*S.x + S.y*i] = 1;
+		}
+		for (int i = 0; i < S.y; i++){
+			z_error_pos[2*S.y*S.x - i - 1] = 1;
+			x_error_pos[2*S.y*S.x - i - 1] = 1;
+		}
+	}
 }
 
 void subcluster::addNoise(const double& p){
@@ -1032,6 +1149,59 @@ void subcluster::addNoise(const double& p){
 	}
 }
 
+
+void subcluster::addNoiseWithX(const double& p, const noisemodel N, const int& seed){
+	random_device rd;
+	mt19937 engine{rd()};
+	if (seed != 0) {
+		engine.seed(seed);
+	}
+	uniform_real_distribution<> dist(0.0, 1.0);
+	
+	//uncorrelated error distribution for all physical qubits
+	if(N == INDEP){
+		for (int i = 0; i < z_error_pos.size(); i++) {
+			if(dist(engine) < p) {
+				z_error_pos[i] = -1;
+			} else {
+				z_error_pos[i] = 1;
+			}
+		}
+		for (int i = 0; i < x_error_pos.size(); i++) {
+			if(dist(engine) < p) {
+				x_error_pos[i] = -1;
+			} else {
+				x_error_pos[i] = 1;
+			}
+		}
+	} else if(N == DEPOL1){
+		for (int i = 0; i < z_error_pos.size(); i++) {
+			double r = dist(engine);
+			if(r < p*2/3) {
+				z_error_pos[i] = -1;
+			} else {
+				z_error_pos[i] = 1;
+			}
+			if(r > p*1/3 && r < p) {
+				x_error_pos[i] = -1;
+			}else {
+				x_error_pos[i] = 1;
+			}
+		}
+	}
+	
+	if (this_surf == subPLANE) {//correction for subPLANE removal of boundary errors
+		for (int i = 0; i < S.x; i++){
+			z_error_pos[S.y*S.x + S.y*i] = 1;
+			x_error_pos[S.y*S.x + S.y*i] = 1;
+		}
+		for (int i = 0; i < S.y; i++){
+			z_error_pos[2*S.y*S.x - i - 1] = 1;
+			x_error_pos[2*S.y*S.x - i - 1] = 1;
+		}
+	}
+}
+
 void subcluster::addNoiseManually(const int& c){
 	z_error_pos[c] *= -1;
 }
@@ -1043,16 +1213,54 @@ void subcluster::clearNoise(){
 }
 
 
-void subcluster::getStabs(){
-	for (int c = 0; c < x_vec.size(); c++) {//measurement of subvertex operator
-		subvertex asubvertex = subvertex(c,S);
-		x_vec[c] = 1;
+void subcluster::getx_measurements(){
+	for (int c = 0; c < S.x*S.y; c++) {//measurement of subvertex_x operator
+		subvertex_x asubvertex = subvertex_x(c,S);
+		stabs[c] = 1;
 		for (int pos = 0; pos < 4; pos ++) {
 			if (z_error_pos[asubvertex.partial[pos]] == -1) {
-				x_vec[c] *= -1;
+				stabs[c] *= -1;
 			}
 		}
 	}
+}
+
+void subcluster::getz_measurements(){
+	for (int c = 0; c < S.x*S.y; c++) {//measurement of subvertex_x operator
+		subvertex_z asubvertex = subvertex_z(c,S);
+		stabs[c+S.x*S.y] = 1;
+		for (int pos = 0; pos < 4; pos ++) {
+			if (x_error_pos[asubvertex.partial[pos]] == -1) {
+				stabs[c+S.x*S.y] *= -1;
+			}
+		}
+	}
+}
+
+
+vector<float> subcluster::getWindow(const subcoord& C){
+	vector<int> window_int(2*window_size*window_size,0);
+	if (!C.l) { //0 qubits
+		for (int d = 0; d < 2*window_size*window_size; d++) {
+			subcoord D(d,subcoord(window_size,window_size,0));
+			if(!D.l){
+				window_int[d] = -(stabs[subcoord(divmod(C.x+D.x-window_size/2+1,S.x),divmod(C.y+D.y-window_size/2,S.y),0).hash(S)]-1)/2; //green
+			} else {
+				window_int[d] = (stabs[subcoord(divmod(C.x+D.x-window_size/2,S.x),divmod(C.y+D.y-window_size/2,S.y),1).hash(S)]-1)/2; //purple
+			}
+		}
+	} else { //1 qubits
+		for (int d = 0; d < 2*window_size*window_size; d++) {
+			subcoord D(d,subcoord(window_size,window_size,0));
+			if(!D.l){
+				window_int[d] = (stabs[subcoord(divmod(C.x+D.x-window_size/2,S.x),divmod(C.y+D.y-window_size/2,S.y),1).hash(S)]-1)/2; //purple
+			} else {
+				window_int[d] = -(stabs[subcoord(divmod(C.x+D.x-window_size/2,S.x),divmod(C.y+D.y-window_size/2+1,S.y),0).hash(S)]-1)/2; //green
+			}
+		}
+	}
+	vector<float> window(window_int.begin(), window_int.end());
+	return window;
 }
 
 
@@ -1061,8 +1269,8 @@ int subcluster::decodeWithMWPM(int verbose = 0){
 
     vector<int> subvertexPosition;//actual (non boundary) verteces to be matched
 
-    for (int c = 0 ; c < x_vec.size(); c++) {
-        if (x_vec[c] == -1) {
+    for (int c = 0 ; c < stabs.size(); c++) {
+        if (stabs[c] == -1) {
 			if(this_surf == subPLANE && c%S.y == 0){//only take the ones in the PLANE
 				continue;
 			}
@@ -1180,3 +1388,372 @@ int subcluster::decodeWithMWPM(int verbose = 0){
 	return parity;
 }
 
+
+void subcluster::decodeWithNN(cppflow::model model, bool binary_output, int verbose, double cutoff){
+	for (int c = 0; c < 2*S.x*S.y; c++) {
+		subcoord C(c,S); //for l=0 qubits: left; for l=1 qubits: up(X stab l=0)
+		//get adjacent vertices
+		int cV1 = subcoord(C.x,C.y,!C.l).hash(S), cV2, cV3; //for l=0 qubits: down; for l=1 qubits: right (Z stab l=1)
+		if (!C.l) { //l=0 qubits
+			cV2 = subcoord(divmod(C.x+1, S.x), C.y, 0).hash(S); //right (X stab l=0)
+			cV3 = subcoord(C.x, divmod(C.y-1, S.y), 1).hash(S); //up (Z stab l=1)
+		} else {    //l=1 qubits
+			cV2 = subcoord(C.x, divmod(C.y+1, S.y), 0).hash(S); //down (Z stab l=1)
+			cV3 = subcoord(divmod(C.x-1, S.x), C.y, 1).hash(S); //left
+		}
+		if (stabs[c]<0||stabs[cV1]<0||stabs[cV2]<0||stabs[cV3]<0) {
+			vector<float> window = getWindow(C);
+			
+			auto input = cppflow::tensor(window, {1,window_size*window_size*2});
+			auto output = model(input);
+			// debug
+			// cout << endl;
+			// cout << C << endl;
+			// cout << window << endl;
+			// cout << output.get_data<float>() << endl;
+			// printQubit(c);
+			// printQubit();
+			// cout << stabs << endl;
+				
+			
+			if (binary_output) {
+				// vector<int> corrections{2*int(round(output.get_data<float>()[0]))-1, 2*int(round(output.get_data<float>()[1]))-1};
+				// z_error_pos[c] *= corrections[0];
+				// x_error_pos[c] *= corrections[1];
+
+				vector<int> corrections{2*int(round(1+cutoff*(output.get_data<float>()[0]-1)))-1, 1};
+				z_error_pos[c] *= corrections[0];
+			} else{
+				vector<int> corrections{0,0};
+				float max = 0;
+				int max_pos = 0;
+				for (int i = 0;i<4;i++){
+					float this_value = output.get_data<float>()[i];			
+					if (this_value > max) {
+						// cout << this_value <<endl;
+						max = this_value;
+						max_pos = i;
+					}
+				}
+				
+				switch (max_pos) {
+					case 0:
+						corrections = {1,1};
+						break;
+					case 1:
+						corrections = {1,-1};
+						break;
+					case 2:
+						corrections = {-1,1};
+						break;
+					case 3:
+						corrections = {-1,-1};
+						break;
+				}
+
+				z_error_pos[c] *= corrections[0];
+				x_error_pos[c] *= corrections[1];
+				// getx_measurements();
+				// getz_measurements();
+			}
+		}
+	}
+}
+
+void subcluster::Predecode(bool binary_output, int verbose){ //still being tested
+	// for (int c = 0; c < 2*S.x*S.y; c++) {
+	// 	subcoord C(c,S); //for l=0 qubits: left; for l=1 qubits: up(X stab l=0)
+	// 	//get adjacent vertices
+	// 	int cV1 = subcoord(C.x,C.y,!C.l).hash(S), cV2, cV3; //for l=0 qubits: down; for l=1 qubits: right (Z stab l=1)
+	// 	if (!C.l) { //l=0 qubits
+	// 		cV2 = subcoord(divmod(C.x+1, S.x), C.y, 0).hash(S); //right (X stab l=0)
+	// 		cV3 = subcoord(C.x, divmod(C.y-1, S.y), 1).hash(S); //up (Z stab l=1)
+	// 	} else {    //l=1 qubits
+	// 		cV2 = subcoord(C.x, divmod(C.y+1, S.y), 0).hash(S); //down (Z stab l=1)
+	// 		cV3 = subcoord(divmod(C.x-1, S.x), C.y, 1).hash(S); //left
+	// 	}
+	// 	if (stabs[c]<0||stabs[cV1]<0||stabs[cV2]<0||stabs[cV3]<0) {
+	// 		vector<float> window = getWindow(C);
+
+	// 		auto input = cppflow::tensor(window, {1,window_size*window_size*2});
+	// 		auto output = model(input);
+			
+	// 		// debug
+	// 		// cout << endl;
+	// 		// cout << C << endl;
+	// 		// cout << window << endl;
+	// 		// cout << output.get_data<float>() << endl;
+	// 		// printQubit(c);
+	// 		// printQubit();
+	// 		// cout << stabs << endl;
+				
+			
+	// 		if (binary_output) {
+	// 			// vector<int> corrections{2*int(round(output.get_data<float>()[0]))-1, 2*int(round(output.get_data<float>()[1]))-1};
+	// 			// z_error_pos[c] *= corrections[0];
+	// 			// x_error_pos[c] *= corrections[1];
+
+	// 			vector<int> corrections{2*int(round(1+cutoff*(output.get_data<float>()[0]-1)))-1, 1};
+	// 			z_error_pos[c] *= corrections[0];
+	// 		} else{
+	// 			vector<int> corrections{0,0};
+	// 			float max = 0;
+	// 			int max_pos = 0;
+	// 			for (int i = 0;i<4;i++){
+	// 				float this_value = output.get_data<float>()[i];			
+	// 				if (this_value > max) {
+	// 					// cout << this_value <<endl;
+	// 					max = this_value;
+	// 					max_pos = i;
+	// 				}
+	// 			}
+				
+	// 			switch (max_pos) {
+	// 				case 0:
+	// 					corrections = {1,1};
+	// 					break;
+	// 				case 1:
+	// 					corrections = {1,-1};
+	// 					break;
+	// 				case 2:
+	// 					corrections = {-1,1};
+	// 					break;
+	// 				case 3:
+	// 					corrections = {-1,-1};
+	// 					break;
+	// 			}
+
+	// 			z_error_pos[c] *= corrections[0];
+	// 			x_error_pos[c] *= corrections[1];
+	// 			// getx_measurements();
+	// 			// getz_measurements();
+	// 		}
+	// 	}
+	// }
+}
+
+//direction : 0-z error 1-x error
+vector<int> subcluster::decodeWithMWPMLoss(int verbose, bool dir, bool make_corrections){
+	//PAIR MATCHING
+	
+	vector<int> vertexPosition;//actual (non boundary) vertices to be matched
+	for (int c = 0 ; c < stabs.size()/2; c++) {
+		int c_prime = c;
+		if (dir){
+			c_prime += stabs.size()/2;
+		}
+		if (stabs[c_prime] == -1) {
+			if(this_surf == subPLANE && c_prime  % S.y == 0){//only take the ones in the subPLANE
+				continue;
+			}
+			vertexPosition.push_back(c_prime);
+		}
+	}
+	
+	int vertices_num = vertexPosition.size();
+	int matches_num;
+	int edges_num;
+	if (this_surf == subTORUS) {
+		matches_num = vertices_num;
+		edges_num = vertices_num * (vertices_num - 1)/2;
+	} else if (this_surf == subPLANE){
+		matches_num = 2 * vertices_num;
+		edges_num = vertices_num * (vertices_num - 1) + vertices_num;
+	}
+	
+	PerfectMatching *pm = new PerfectMatching(matches_num, edges_num);
+	struct PerfectMatching::Options options;
+	options.verbose = false;
+	pm->options = options;
+	
+	vector<int> boundary_nodes; //vector to keep track of boundary nodes
+	
+	for (int i = 0; i < vertices_num; i++) {
+		int c1 = vertexPosition[i];
+		if (this_surf == subPLANE) {// (x方向不同 需改)add in the boundary nodes
+			int x1 = c1 %(S.x * S.y) % S.y;
+			int y1 = c1 %(S.x * S.y) / S.y;
+			if (x1 * 2 <= S.y) { // use left boundary
+				boundary_nodes.push_back(-x1);
+				pm->AddEdge(i, i + vertices_num, x1);
+			} else{ //use right boundary
+				boundary_nodes.push_back(S.y - x1);
+				pm->AddEdge(i, i + vertices_num, S.y - x1);
+			}
+		}
+		for (int j = i + 1; j < vertices_num; j++) {
+			int c2 = vertexPosition[j];
+			pm->AddEdge(i,j,getTaxicabDistance(S, c1, c2, this_surf));
+		}
+	}
+	if (this_surf == subPLANE) {//add in the interconnection of the boundary nodes
+		for (int i = vertices_num; i < 2 * vertices_num; i++) {
+			for (int j = i + 1; j < 2 * vertices_num; j++) {
+				pm->AddEdge(i,j,0);
+			}
+		}
+	}
+	//solve the graph using MWPM decoder
+	pm->Solve();
+	
+	vector<int>parity{1,1};
+	
+	if (this_surf == subPLANE) {
+		for (int i = 0; i < vertices_num; i++) {
+			if (pm->GetMatch(i) == i + vertices_num && boundary_nodes[i] <= 0) { //matched to left boundary
+				parity[1] *= -1;
+			}
+		}
+		for (int i = 0; i < S.y; i++){//errors on left boundary
+			parity[1] *= z_error_pos[S.x*i];
+		}
+	}
+	
+	if (make_corrections) {
+		//======================= CORRECTION ==============================================
+		//Find the error operator of each pair.
+		vector<int> error_op_Z_pos; //
+		vector<int> matchPosition; //matching vertex of vertexPosition respectively
+		for (int i = 0; i < vertices_num; i++) {
+			subcoord relative_pos; //get relative position (vector) of pair to determine the path in between.
+			if (dir == 0){
+				int c1 = vertexPosition[i]; //position of vertexa
+				subvertex_x aVertex(c1,S);
+				subvertex_x bVertex;
+				
+				
+				if (this_surf == subTORUS || (this_surf == subPLANE && pm->GetMatch(i) < vertices_num)){
+					int c2 = vertexPosition[pm->GetMatch(i)];// position of vertexa's match, vertexb
+					matchPosition.push_back(c2);
+					if (count(matchPosition.begin(), matchPosition.end(), c1)) continue; //Prevent recounting of vertices
+					bVertex = subvertex_x(c2,S);
+					
+					relative_pos = getTaxicabDisplacement(S, c1, c2, this_surf);
+				}else{
+					relative_pos = {boundary_nodes[pm->GetMatch(i) - vertices_num], 0,0};
+				}
+				int n, x, y;
+				if (relative_pos.x > 0) {//a to the left of b
+					n = aVertex.partial[1];//use right qubit
+					x = n % S.x;
+					y = n / S.x;
+					for(int i = 0; i<abs(relative_pos.x); i++){
+						error_op_Z_pos.push_back(divmod(x+i, S.x) + y*S.y);
+					}
+				} else if(relative_pos.x < 0) {//a to the right of b
+					n = aVertex.partial[0];//use left qubit
+					x = n % S.x;
+					y = n / S.x;
+					for(int i =0; i<abs(relative_pos.x); i++){
+						error_op_Z_pos.push_back(divmod(x-i, S.x) + y*S.y);
+					}
+				}		
+				if (relative_pos.y > 0) {//a above b
+					n = bVertex.partial[2];//use upper qubit
+					x = (n - S.y*S.x) % S.x;
+					y = (n - S.y*S.x) / S.x;
+					for(int i =0; i< abs(relative_pos.y); i++){
+						error_op_Z_pos.push_back(x + divmod(y-i,S.y)*S.y + S.x*S.y);
+					}
+				} else if (relative_pos.y < 0) {//a below b
+					n = bVertex.partial[3];//use lower qubit
+					x = (n - S.y*S.x) % S.x;
+					y = (n - S.y*S.x) / S.x;
+					for(int i =0; i< abs(relative_pos.y); i++){
+						error_op_Z_pos.push_back(x + divmod(y+i,S.y)*S.y + S.x*S.y);
+					}
+				}
+			} else {
+				int c1 = vertexPosition[i]; //position of vertexa
+				subvertex_z aVertex(c1 - S.x*S.y, S);
+				subvertex_z bVertex;
+				
+				if (this_surf == subTORUS || (this_surf == subPLANE && pm->GetMatch(i) < vertices_num)){
+					int c2 = vertexPosition[pm->GetMatch(i)];// position of vertexa's match, vertexb
+					matchPosition.push_back(c2);
+					if (count(matchPosition.begin(), matchPosition.end(), c1)) continue; //Prevent recounting of vertices
+					bVertex = subvertex_z(c2 - S.x*S.y, S);
+					
+					relative_pos = getTaxicabDisplacement(S, c1, c2, this_surf);
+				}else{
+					relative_pos = {boundary_nodes[pm->GetMatch(i) - vertices_num], 0,0};
+				}
+				int n, x, y;
+				if (relative_pos.x > 0) {//a to the left of b
+					n = aVertex.partial[1];//use right qubit
+					x = (n - S.x*S.y) % S.x;
+					y = (n - S.x*S.y) / S.x;
+					for(int i = 0; i<abs(relative_pos.x); i++){
+						error_op_Z_pos.push_back(divmod(x+i, S.x) + y*S.y + S.x*S.y);
+					}
+				} else if(relative_pos.x < 0) {//a to the right of b
+					n = aVertex.partial[0];//use left qubit
+					
+					x = (n - S.x*S.y) % S.x;
+					y = (n - S.x*S.y) / S.x;
+					for(int i =0; i<abs(relative_pos.x); i++){
+						error_op_Z_pos.push_back(divmod(x-i, S.x) + y*S.y + S.x*S.y);
+					}
+				}
+				if (relative_pos.y > 0) {//a above b
+					n = bVertex.partial[2];//use upper qubit
+					x = n % S.x;
+					y = n / S.x;
+					for(int i =0; i< abs(relative_pos.y); i++){
+						error_op_Z_pos.push_back(x + divmod(y-i,S.y)*S.y);
+					}
+				} else if (relative_pos.y < 0) {//a below b
+					n = bVertex.partial[3];//use lower qubit
+					x = n % S.x;
+					y = n / S.x;
+					for(int i =0; i< abs(relative_pos.y); i++){
+						error_op_Z_pos.push_back(x + divmod(y+i,S.y)*S.y);
+					}
+				}
+			}
+		}
+		//remove repeated Z in correction op
+		vector<int> error_op_Z_pos_reduced;
+		for (int i = 0; i < error_op_Z_pos.size(); i++) {
+			int c = error_op_Z_pos[i];
+			if (count(error_op_Z_pos_reduced.begin(), error_op_Z_pos_reduced.end(), c)) continue;
+			error_op_Z_pos_reduced.push_back(c);
+			if (!dir){
+				z_error_pos[c] *= -1; //act local Z operator
+			} else{
+				x_error_pos[c] *= -1;
+			}	
+		}
+	}
+	
+	if(this_surf == subTORUS){
+		int result = 1;
+		if (!dir){
+			for (int i = 0; i < S.x ; i++) { // Check X1 operator
+				result *= z_error_pos[i * S.y];
+			}
+			parity[0] = result;
+			
+			result = 1;
+			for (int i = S.x*S.y; i < (S.y+1)*S.x ; i++) { // Check X2 operator
+				result *= z_error_pos[i];
+			}
+			parity[1] = result;
+		} else{
+			for (int i = 0; i < S.x ; i++) { // Check Z1 operator
+				result *= x_error_pos[i];
+			}
+			parity[0] = result;
+			
+			result = 1;
+			for (int i = 0; i < S.x ; i++) { // Check Z2 operator
+				result *= x_error_pos[i * S.y + S.x*S.y];
+			}
+			parity[1] = result;
+		}
+		
+	}
+	
+	delete pm;
+	return parity;
+}

@@ -12,4 +12,9 @@
 </ol>
 <p>If you encounter any issues or have questions, please feel free to open an issue or submit a pull request.</p>
 
-
+<p>If you encounter any issues or have questions, please feel free to open an issue or submit a pull request.</p>
+<p>If your system does not have TensorFlow installed, you can build TensorFlow with the following commands:</p>
+<pre>FILENAME=libtensorflow-cpu-linux-x86_64-2.11.0.tar.gz
+wget -q --no-check-certificate https://storage.googleapis.com/tensorflow/libtensorflow/${FILENAME}
+sudo tar -C /usr/local -xzf ${FILENAME}</pre>
+<p>Check <a href="https://www.tensorflow.org/install/lang_c">https://www.tensorflow.org/install/lang_c</a> for appropriate versions.</p>

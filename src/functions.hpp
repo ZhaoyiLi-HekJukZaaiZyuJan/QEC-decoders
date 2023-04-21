@@ -81,7 +81,7 @@ int getTaxicabDistanceChunks(const coord&, const vector<int>&, const vector<int>
 
 //======================== 2D Distance =========================//
 
-subcoord getTaxicabDisplacement(const subcoord& S, const int&, const int&, const subsurfacetype&);
+subcoord getTaxicabDisplacement(const subcoord&, const int&, const int&, const subsurfacetype&);
 
 int getTaxicabDistance(const subcoord&, const int&, const int&, const subsurfacetype&);
 

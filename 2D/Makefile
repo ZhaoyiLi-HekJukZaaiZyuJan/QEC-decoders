@@ -9,7 +9,7 @@ OBJS := $(patsubst %.cpp, %.o, $(SOURCES))
 
 CFLAGS := -std=c++17 -lpthread -no-pie -fmax-errors=5 -O3 -I ../src \
 		-I ../src/libs/ \
-		-I ../src/libs/blossom5-v2.05.src
+		-I ../src/libs/blossom5-v2.05.src 
 CXX ?= g++
 INCLUDES :=
 LIBDIR :=

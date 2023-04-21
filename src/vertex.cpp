@@ -13,7 +13,7 @@ vertex::vertex(const int& c, const coord& S){
 	//each vertex contains 6 physical_qubits, left (Mx-), right(Mx+), up (Ly-), down (Ly+), less (Nz-), more (Nz+)
 };
 
-subvertex::subvertex(const int& c, const subcoord& S){
+subvertex_x::subvertex_x(const int& c, const subcoord& S){
 	int L = S.x;
 	int M = S.y;
 	x = c % L; //x subcoordinate
@@ -23,3 +23,15 @@ subvertex::subvertex(const int& c, const subcoord& S){
 	//each subvertex contains 4 physical_qubits, left (Mx-), right (Mx+), up, down
 	//each vertex contains 6 physical_qubits, left (Mx-), right(Mx+), up (Ly-), down (Ly+), less (Nz-), more (Nz+)
 };
+
+subvertex_z::subvertex_z(const int& c, const subcoord& S){
+	int L = S.x;
+	int M = S.y;
+	x = c % L; //x subcoordinate
+	y = c / L; //y subcoordinate
+	partial = {M*L+c, M*L+y*L+divmod(x+1,M), c, divmod(y+1,L)*L+x
+	};
+	//each subvertex contains 4 physical_qubits, left (Mx-), right (Mx+), up, down
+	//each vertex contains 6 physical_qubits, left (Mx-), right(Mx+), up (Ly-), down (Ly+), less (Nz-), more (Nz+)
+};
+

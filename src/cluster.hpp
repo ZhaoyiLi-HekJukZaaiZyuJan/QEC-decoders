@@ -5,13 +5,18 @@
 # include "coord.hpp"
 # include "types.hpp"
 # include "../src/libs/blossom5-v2.05.src/PerfectMatching.h"
+# include "../src/libs/cppflow-master/include/cppflow/ops.h"
+# include "../src/libs/cppflow-master/include/cppflow/model.h"
 
 class cluster {
 	public:
 	vector<int> c_error_pos;
+	vector<int> d_error_pos;
 	vector<int> stabs;
 	//loss, superchecks, and superchunks
+	
 	vector<int> c_loss_pos;
+	vector<int> d_loss_pos;
 	
 	vector<vector<int>> super_chunks;
 	vector<int> left_boundary_chunks;
@@ -63,22 +68,34 @@ class subcluster {
 	subcluster(const subcoord&, const subsurfacetype&);
 
 	void addNoise(const double&);
+	void addNoiseWithX(const double&, const noisemodel , const int& seed=0);
 	void clearNoise();
 	void addNoiseManually(const int&);
 
 	void printQubit();
+	void printQubitWithWindow(int);
+	void addError();
 
-	void getStabs();
+	void getx_measurements();
+	void getz_measurements();
 	int decodeWithMWPM(int);
+	vector<int> decodeWithMWPMLoss(int verbose = 0, bool dir = 0, bool make_corrections = 0);
+	void decodeWithNN(cppflow::model model, bool binary_output, int verbose = 0, double cutoff = 1);
+	void Predecode(bool binary_output, int verbose = 0);
+
+	//NN Decoder functions
+	vector<float> getWindow(const subcoord&);
 
 	//	vector<int> surf;///decode
 	void getQubit();///decode
 	//	void printSurf();///decode
 	//	void surfaceCorrect(PerfectMatching*, const int&, const vector<int>&, const vector<int>&, const int&);///decode
-	private:
 	//high level structures
 	vector<int> z_error_pos;
-	vector<int> x_vec;
+	vector<int> x_error_pos;
+	vector<int> stabs;
 	subsurfacetype this_surf = subPLANE;
+
+	
 	
 };
