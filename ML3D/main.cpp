@@ -31,11 +31,11 @@ clock_t start_t = clock();
 auto start = chrono::steady_clock::now();	
 
 
-class Cluster : public cluster {
+class MLCluster : public cluster {
 	public:
 	//dual lattice functions
 	vector<int> d_error_pos;
-	Cluster(const coord&, const surfacetype&);
+	MLCluster(const coord&, const surfacetype&);
 
 	void addFullGateNoise(const double&, const noisemodel, const int&);
 	void addFullNoise(const double&, const double&, const noisemodel, const lossmodel, const int&);
@@ -48,12 +48,12 @@ class Cluster : public cluster {
 	void decodeWithNN(cppflow::model, int);
 };
 
-Cluster::Cluster(const coord& S, const surfacetype& this_surf) : cluster(S, this_surf){
+MLCluster::MLCluster(const coord& S, const surfacetype& this_surf) : cluster(S, this_surf){
 	vector<int> d_error_pos(3*S.x*S.y*S.z,1);
 	this->d_error_pos = d_error_pos;
 }
 
-void Cluster::addFullNoise(const double & p, const double & q, const noisemodel N, const lossmodel Nl, const int& seed=0){
+void MLCluster::addFullNoise(const double & p, const double & q, const noisemodel N, const lossmodel Nl, const int& seed=0){
 	//Total heuristic Probabilities
 	random_device rd;
 	mt19937 engine{rd()};
@@ -193,7 +193,7 @@ void Cluster::addFullNoise(const double & p, const double & q, const noisemodel 
 	}
 }
 
-void Cluster::addFullGateNoise(const double & p, const noisemodel N, const int& seed=0){
+void MLCluster::addFullGateNoise(const double & p, const noisemodel N, const int& seed=0){
 	//Total heuristic Probabilities
 	random_device rd;
 	mt19937 engine{rd()};
@@ -451,7 +451,7 @@ void Cluster::addFullGateNoise(const double & p, const noisemodel N, const int& 
 	}
 }
 
-void Cluster::getDualStabs(){
+void MLCluster::getDualStabs(){
 	for (int c = 0; c < S.x*S.y*S.z; c++){
 		stabs[c + S.x*S.y*S.z] = 1;
 		//measurement of vertex operator
@@ -465,7 +465,7 @@ void Cluster::getDualStabs(){
 }
 
 
-vector<float> Cluster::getWindow(coord& C, const bool& imprint = 0){
+vector<float> MLCluster::getWindow(coord& C, const bool& imprint = 0){
 	if (imprint){
 		if (C.l <= 2){ //z errors
 			c_error_pos[C.hash(S)] = 2;
@@ -589,7 +589,7 @@ vector<float> Cluster::getWindow(coord& C, const bool& imprint = 0){
 	return window;
 }
 
-void Cluster::decodeWithNN(cppflow::model model, int verbosity = 0){
+void MLCluster::decodeWithNN(cppflow::model model, int verbosity = 0){
 	vector<int> check_pos;
 	for (int c = 0; c < S.x*S.y*S.z; c++) {
 		if(stabs[c] < 0){
@@ -641,7 +641,7 @@ void Cluster::decodeWithNN(cppflow::model model, int verbosity = 0){
 	// cout << output << endl;
 }
 
-int Cluster::decodeWithMWPMFull(int verbosity = 0, bool dir = 0, bool make_corrections = 0){
+int MLCluster::decodeWithMWPMFull(int verbosity = 0, bool dir = 0, bool make_corrections = 0){
 	//PAIR MATCHING
     vector<int> vertexPosition;///actual (non boundary) vertices to be matched
 	
@@ -741,7 +741,7 @@ int Cluster::decodeWithMWPMFull(int verbosity = 0, bool dir = 0, bool make_corre
 	return parity;
 }
 
-void Cluster::printAll(surfacetype s = TORUS){
+void MLCluster::printAll(surfacetype s = TORUS){
 	for(int k = 0; k < 2*S.z; k++){
 		vector<vector<string>> print_out;
 		if(s == TORUS){
@@ -829,7 +829,7 @@ void Cluster::printAll(surfacetype s = TORUS){
 	
 }
 
-void testDecoding(cppflow::model model, Cluster& testcluster, const double& p, const double& q, const int& seed, surfacetype surf, noisemodel N, lossmodel L, int verbosity = 0, bool decode_w_NN =1){
+void testDecoding(cppflow::model model, MLCluster& testcluster, const double& p, const double& q, const int& seed, surfacetype surf, noisemodel N, lossmodel L, int verbosity = 0, bool decode_w_NN =1){
 	start_t = clock();
 
 	//noise model secsion
@@ -926,7 +926,7 @@ bool use_env){
 			cout << ".";
 			cout.flush();
 		}
-		Cluster testcluster({Sw+2,Sw+2,Sw+2,0},surf);
+		MLCluster testcluster({Sw+2,Sw+2,Sw+2,0},surf);
 		int num_add = 0;
 		if (N == GATE) {
 			testcluster.addFullGateNoise(p, N);
@@ -983,7 +983,7 @@ int verbosity = 0, int thread = 1, bool make_corrections = 0, bool decode_with_N
 	int num_correct;
 
 	for (int l = lmin; l <= lmax; l=l+2) {
-		Cluster testcluster({l,l,l,0}, surf);
+		MLCluster testcluster({l,l,l,0}, surf);
 		cout << endl;
 		for (int iq = 0; iq <= Nq; iq ++) {
 			double q = qmin + (qmax-qmin)/q_bins * iq;
@@ -1002,7 +1002,7 @@ int verbosity = 0, int thread = 1, bool make_corrections = 0, bool decode_with_N
 					cppflow::model model(directory + "models/" + model_name + p_name);//absolute directory to my model
 					if (thread) {
 						parallel_for(trials, [&](int start, int end){
-							Cluster testcluster({l,l,l,0}, surf);
+							MLCluster testcluster({l,l,l,0}, surf);
 							for(int i = start; i < end; ++i){
 								if (N == GATE) {
 									testcluster.addFullGateNoise(p, N);
@@ -1071,7 +1071,7 @@ int verbosity = 0, int thread = 1, bool make_corrections = 0, bool decode_with_N
 				} else {
 					if (thread) {
 						parallel_for(trials, [&](int start, int end){
-							Cluster testcluster({l,l,l,0}, surf);
+							MLCluster testcluster({l,l,l,0}, surf);
 							for(int i = start; i < end; ++i){
 								if (N == GATE) {
 									testcluster.addFullGateNoise(p, N);
@@ -1209,7 +1209,7 @@ int main(int argc, const char *argv[]) {
 			p_name.pop_back();
 		}
 		cppflow::model model(directory + "models/" + model_name + p_name);//absolute directory to my_model
-		Cluster testcluster({lmin,lmin,lmin,0}, s);
+		MLCluster testcluster({lmin,lmin,lmin,0}, s);
 		int i = 0;
 		do {
 			testDecoding(model, testcluster, pmin, qmin, seed + i, s, N, L, verbosity, decode_with_NN);

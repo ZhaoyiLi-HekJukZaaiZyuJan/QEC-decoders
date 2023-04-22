@@ -1532,8 +1532,9 @@ void subcluster::Predecode(bool binary_output, int verbose){ //still being teste
 	// }
 }
 
-//direction : 0-z error 1-x error
-vector<int> subcluster::decodeWithMWPMLoss(int verbose, bool dir, bool make_corrections){
+//variables:
+//dir (direction) 0-z decoder 1-x decoder
+vector<int> subcluster::decodeWithMWPMFull(int verbose, bool dir, bool make_corrections){
 	//PAIR MATCHING
 	
 	vector<int> vertexPosition;//actual (non boundary) vertices to be matched

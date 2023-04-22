@@ -50,6 +50,7 @@ class cluster {
 	
 	void getStabs();
 	int decodeWithMWPM(int, bool, surfacetype);
+	int decodeWithMWPMFull(int verbosity = 0, bool dir = 0, bool make_corrections = 0)
 	int decodeWithMWPMLoss(int, bool, surfacetype);
 	
 	vector<int> surf;///decode
@@ -61,6 +62,7 @@ class cluster {
 	int checkMeasurementOutcomeX1();
 	int checkMeasurementOutcomeX2();
 };
+
 
 class subcluster {
 	public:
@@ -79,7 +81,7 @@ class subcluster {
 	void getx_measurements();
 	void getz_measurements();
 	int decodeWithMWPM(int);
-	vector<int> decodeWithMWPMLoss(int verbose = 0, bool dir = 0, bool make_corrections = 0);
+	vector<int> decodeWithMWPMFull(int verbose = 0, bool dir = 0, bool make_corrections = 0);
 	void decodeWithNN(cppflow::model model, bool binary_output, int verbose = 0, double cutoff = 1);
 	void Predecode(bool binary_output, int verbose = 0);
 
