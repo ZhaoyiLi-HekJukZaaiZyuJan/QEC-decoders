@@ -28,7 +28,7 @@ void testDecoding(const int L, const int M, const double p, subsurfacetype surf=
 	testcluster.addNoise(p);
 
 	cout << "qubit: " << endl;
-	testcluster.getStabs();
+	testcluster.getx_measurements();
 	testcluster.printQubit();
 	cout << testcluster.decodeWithMWPM(1) << endl;
 
@@ -68,7 +68,7 @@ void loopDecoding(const int lmin, const int lmax, const int trials, const double
 					int num_add = 0;
 					for(int i = start; i < end; ++i){
 						testcluster.addNoise(p);
-						testcluster.getStabs();
+						testcluster.getx_measurements();
 						
 						if (testcluster.decodeWithMWPM(verbose) == 1) {
 							num_correct  ++; //correction successful
@@ -79,7 +79,7 @@ void loopDecoding(const int lmin, const int lmax, const int trials, const double
 			} else {
 				for (int i = 0; i < trials; i++) {
 					testcluster.addNoise(p);
-					testcluster.getStabs();
+					testcluster.getx_measurements();
 					
 					if (testcluster.decodeWithMWPM(verbose) == 1) {
 						num_correct ++; //correction successful
