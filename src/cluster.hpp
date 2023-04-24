@@ -51,7 +51,7 @@ class cluster {
 	void getStabs();
 	int decodeWithMWPM(int, bool, surfacetype);
 	int decodeWithMWPMFull(int verbosity = 0, bool dir = 0, bool make_corrections = 0);
-	int decodeWithMWPMLoss(int verbosity, bool make_corrections, surfacetype surf);
+	int decodeWithMWPMLoss(int, bool, surfacetype);
 	
 	vector<int> surf;///decode
 	void getSurf();///decode
