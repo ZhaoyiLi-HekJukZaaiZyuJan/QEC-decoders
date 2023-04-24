@@ -50,10 +50,10 @@ void testDecoding(cppflow::model model, const int L, const int M, const double p
 	cout << "NN error correction" << endl;
 	testcluster.printQubit();
 	
-	if (surf == subPLANE && testcluster.decodeWithMWPMLoss(1,dir,make_corrections)[0] == 1) {
+	if (surf == subPLANE && testcluster.decodeWithMWPMFull(1,dir,make_corrections)[0] == 1) {
 		cout << "success" << endl; //correction successful
 	} else if (surf == subTORUS) {
-		vector<int> parity = testcluster.decodeWithMWPMLoss(1,dir,make_corrections);
+		vector<int> parity = testcluster.decodeWithMWPMFull(1,dir,make_corrections);
 		if (parity[0] == 1 && parity[1] == 1) {
 			cout << "success" << endl;
 		} else {
@@ -107,10 +107,10 @@ void loopDecoding(string directory, string model_name, const int L_min, const in
 							testcluster.getx_measurements();
 							testcluster.getz_measurements();
 							
-							if (surf == subPLANE && testcluster.decodeWithMWPMLoss(verbose, dir, 0)[0] == 1) {
+							if (surf == subPLANE && testcluster.decodeWithMWPMFull(verbose, dir, 0)[0] == 1) {
 								num_add++; //correction successful
 							} else{
-								vector<int> parity = testcluster.decodeWithMWPMLoss(verbose, dir, 1);
+								vector<int> parity = testcluster.decodeWithMWPMFull(verbose, dir, 1);
 								if (parity[0]==1&&parity[1]==1) {
 									num_add++;
 								}
@@ -128,10 +128,10 @@ void loopDecoding(string directory, string model_name, const int L_min, const in
 						testcluster.getx_measurements();
 						testcluster.getz_measurements();
 						
-						if (surf == subPLANE && testcluster.decodeWithMWPMLoss(verbose, dir)[0] == 1) {
+						if (surf == subPLANE && testcluster.decodeWithMWPMFull(verbose, dir)[0] == 1) {
 							num_correct ++; //correction successful
 						} else{
-								vector<int> parity = testcluster.decodeWithMWPMLoss(verbose, dir, 1);
+								vector<int> parity = testcluster.decodeWithMWPMFull(verbose, dir, 1);
 								if (parity[0]==1&&parity[1]==1) {
 									num_correct++;
 								}
@@ -148,10 +148,10 @@ void loopDecoding(string directory, string model_name, const int L_min, const in
 							testcluster.getx_measurements();
 							testcluster.getz_measurements();
 							
-							if (surf == subPLANE && testcluster.decodeWithMWPMLoss(verbose,dir, 0)[0] == 1) {
+							if (surf == subPLANE && testcluster.decodeWithMWPMFull(verbose,dir, 0)[0] == 1) {
 								num_add++; //correction successful
 							} else{
-								vector<int> parity = testcluster.decodeWithMWPMLoss(verbose, dir, 1);
+								vector<int> parity = testcluster.decodeWithMWPMFull(verbose, dir, 1);
 								if (parity[0]==1&&parity[1]==1) {
 									num_add++;
 								}
@@ -165,10 +165,10 @@ void loopDecoding(string directory, string model_name, const int L_min, const in
 						testcluster.getx_measurements();
 						testcluster.getz_measurements();
 						
-						if (surf == subPLANE && testcluster.decodeWithMWPMLoss(verbose, dir)[0] == 1) {
+						if (surf == subPLANE && testcluster.decodeWithMWPMFull(verbose, dir)[0] == 1) {
 							num_correct ++; //correction successful
 						} else{
-								vector<int> parity = testcluster.decodeWithMWPMLoss(verbose, dir, 1);
+								vector<int> parity = testcluster.decodeWithMWPMFull(verbose, dir, 1);
 								if (parity[0]==1&&parity[1]==1) {
 									num_correct++;
 								}
