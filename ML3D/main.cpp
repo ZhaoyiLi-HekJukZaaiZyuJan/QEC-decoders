@@ -10,6 +10,7 @@
 #include <assert.h>
 #include <random>
 
+#include "main.hpp"
 #include "../src/vertex.hpp"
 #include "../src/functions.hpp"
 #include "../src/cluster.hpp"
@@ -888,7 +889,7 @@ void testDecoding(cppflow::model model, MLCluster& testcluster, const double& p,
 	if (L == OFF_loss){
 		parity = testcluster.decodeWithMWPMFull(verbosity, 0, 1);
 	} else {
-		parity = testcluster.decodeWithMWPMLoss(verbosity, 0, PLANE);
+		parity = testcluster.decodeWithMWPMLoss(verbosity, 0, 1, PLANE);
 	}
 
 	testcluster.getStabs();
@@ -1028,7 +1029,7 @@ int verbosity = 0, int thread = 1, bool make_corrections = 0, bool decode_with_N
 										num_correct ++; //correction successful
 									}
 								} else {
-									if (testcluster.decodeWithMWPMLoss(verbosity, dir, PLANE) == 1) {
+									if (testcluster.decodeWithMWPMLoss(verbosity, dir, 0, PLANE) == 1) {
 										num_correct ++; //correction successful
 									}
 								}		
@@ -1061,7 +1062,7 @@ int verbosity = 0, int thread = 1, bool make_corrections = 0, bool decode_with_N
 									num_correct ++; //correction successful
 								}
 							} else {
-								if (testcluster.decodeWithMWPMLoss(verbosity, dir, PLANE) == 1) {
+								if (testcluster.decodeWithMWPMLoss(verbosity, dir, 0, PLANE) == 1) {
 									num_correct ++; //correction successful
 								}
 							}	
