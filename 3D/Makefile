@@ -5,11 +5,9 @@ SOURCES := $(foreach dir, $(DIRS), $(wildcard $(dir)/*.cpp))
 BLOSSOM_OBJECTS:= $(call rwildcard, ../src/libs/blossom5-v2.05.src,*.o)
 OBJS := $(patsubst %.cpp, %.o, $(SOURCES))
 
-CFLAGS := -std=c++17 -ltensorflow -lpthread -no-pie -fmax-errors=5 -O3 -I ../src \
+CFLAGS := -std=c++17 -lpthread -no-pie -fmax-errors=5 -O3 -I ../src \
 		-I ../src/libs/ \
-		-I ../src/libs/blossom5-v2.05.src \
-		-I ../src/libs/cppflow-master/include \
-		-I ../src/libs/cppflow-master/include/cppflow
+		-I ../src/libs/blossom5-v2.05.src
 CXX ?= g++
 INCLUDES :=
 LIBDIR :=
