@@ -9,7 +9,6 @@
 #include <iostream>
 #include <assert.h>
 #include <random>
-
 #include "../src/vertex.hpp"
 #include "../src/functions.hpp"
 #include "../src/cluster.hpp"
