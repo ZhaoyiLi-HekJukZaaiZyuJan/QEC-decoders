@@ -1,4 +1,7 @@
 # Ignore all .o files
 *.o
+ML3D/*.o
+ML3D/src/libs/blossom5-v2.05.src/*.o
+ML3D/src/libs/blossom5-v2.05.src/*/*.o
 
 .DS_Store
