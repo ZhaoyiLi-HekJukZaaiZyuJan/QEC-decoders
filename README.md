@@ -50,7 +50,7 @@ bazel test tensorflow/test/...
 
 <section>
   <h2>Variables</h2>
-<p>This program accepts command-line arguments, which can be used to customize its behavior. The available options for each subprogram are listed in the following table, along with any options that are not available. </p>
+<p>This program accepts command-line arguments, which can be used to customize its behavior. The available options for each subprogram are listed in the following table, along with any options that are not available. Hover your mouse over to see more details. </p>
 <table>
   <tr>
     <th>Option</th>
@@ -124,7 +124,7 @@ bazel test tensorflow/test/...
   </tr>
   <tr>
     <td>--generate</td>
-    <td>Generation mode switch. Do not use this option unless you want to generate training data</td>
+    <td title="This function is used by the generation code on the fly. Do not use this option unless you want to generate training data. ">Generation mode switch</td>
     <td>FALSE</td>
     <td>&#x2705</td>
     <td>&#x2705</td>
