@@ -1,5 +1,5 @@
 <h1>QEC-decoders</h1>
-<p>This repository contains several decoders for topological quantum error correction. The decoders are implemented in C++ and use the Blossom V algorithm for maximum-weight perfect matching.</p>
+<p>This repository contains several decoders for topological quantum error correction. The decoders are implemented in C++ and use the Blossom V algorithm for maximum-weight perfect matching. The parts marked in grey is optional to read. </p>
 
 <section>
   <h2>Setting up TensorFlow Dependencies</h2>
@@ -15,7 +15,9 @@ sudo tar -C /usr/local -xzf ${FILENAME}
 cd tensorflow
 ./configure
 bazel test tensorflow/test/...
+
   </pre>
+  <span style="color: grey;">
   <h2>Testing the Cppflow Package</h2>
   <p>
   To test the Cppflow package, go to <code>/CppflowTest</code> and run the following code to compile <code>main.cpp</code>:
@@ -27,10 +29,23 @@ bazel test tensorflow/test/...
   (tensor: shape=[3], dtype=TF_DOUBLE, data=[2 3 4])
   </pre>
   <p>
+ </span>
 </section>
+
+
+<section>
+<h2>Setting up python dependencies</h2>
+
+To run the code, please use python3.8+, and install everything form the file <code> requirements.txt </code>
+</section>
+
 
 <section>
 <h2>Training a model</h2>
+
+With all the correct dependencies installed, run the file <code> create_model.py</code> from its parent directory <code> ML3D </code>.
+
+
 
 </section>
 <section>
@@ -172,7 +187,7 @@ bazel test tensorflow/test/...
     <td></td>
   </tr>
   <tr>
-    <td>-N, --noise_model</td>
+    <td title="Please refer to the next section for more details on the different noise models"> -N, --noise_model</td>
     <td>Noise model</td>
     <td>INDEP</td>
     <td>&#x2705</td>
@@ -201,8 +216,118 @@ bazel test tensorflow/test/...
   </tr>
 </table>
 
-<p>To run the program with default settings, simply run:</p>
-<pre>./simulate</pre>
+
+<section>
+<h2> Noise Models </h2>
+<p>Here we list all the noise model options of the simulation project. Those noise models are defined in the file <code>type.hpp</code></p>.
+<table>
+  <tr>
+    <th>Model Name</th>
+    <th>Description</th>
+    <th>Suboptions</th>
+    <th>3D Lattice</th>
+    <th>2D Lattice</th>
+  </tr>
+   <tr>
+    <td>No Noise Model (defualt)<code>OFF</code></td>
+    <td></td>
+    <td></td>
+    <td>&#x2705</td>
+    <td>&#x2705</td>
+  </tr>
+  <tr>
+    <td>Independent Noise Model <code>INDEP</code></td>
+    <td>{(1-p) I, p X}</td>
+    <td></td>
+    <td>&#x2705</td>
+    <td>&#x2705</td>
+  </tr>
+  <tr>
+    <td> Converted 211 Independent Model <code>INDEP_211</code></td>
+    <td> </td>
+    <td></td>
+    <td></td>
+    <td></td>
+  </tr>
+  <tr>
+    <td> <code>EM2p0</code></td>
+    <td> </td>
+    <td></td>
+    <td></td>
+    <td></td>
+  </tr>
+  <tr>
+    <td> <code>EM2</code></td>
+    <td> </td>
+    <td></td>
+    <td></td>
+    <td></td>
+  </tr>
+  <tr>
+    <td> <code>EM2_full</code></td>
+    <td> </td>
+    <td></td>
+    <td></td>
+    <td></td>
+  </tr>
+   <tr>
+    <td> <code>GATE</code></td>
+    <td> </td>
+    <td></td>
+    <td></td>
+    <td></td>
+  </tr>
+  <tr>
+    <td> <code>GATE_full</code></td>
+    <td> </td>
+    <td></td>
+    <td></td>
+    <td></td>
+  </tr>
+  <tr>
+    <td> <code>GATE_biased</code></td>
+    <td> </td>
+    <td></td>
+    <td></td>
+    <td></td>
+  </tr>
+  <tr>
+    <td> <code>DEPOL1</code></td>
+    <td> </td>
+    <td></td>
+    <td></td>
+    <td></td>
+  </tr>
+  <tr>
+    <td> <code>DEPOL2</code></td>
+    <td> </td>
+    <td></td>
+    <td></td>
+    <td></td>
+  </tr>
+  <tr>
+    <td>Independent Loss Model <code>LOSS</code></td>
+    <td> </td>
+    <td></td>
+    <td></td>
+    <td></td>
+  </tr>
+  <tr>
+    <td> <code>TEST</code></td>
+    <td> </td>
+    <td></td>
+    <td></td>
+    <td></td>
+  </tr>
+  <tr>
+    <td>Manually Adding Noise <code>MANUAL</code></td>
+    <td> </td>
+    <td></td>
+    <td></td>
+    <td></td>
+  </tr>
+</table>
+</section>
 
 <h2>Functions</h2>
 <p>The following functions are defined in the code:</p>
