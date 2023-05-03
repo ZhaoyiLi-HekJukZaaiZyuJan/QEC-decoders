@@ -45,27 +45,150 @@ bazel test tensorflow/test/...
 
 <section>
   <h2>Variables</h2>
-<p>The following command line arguments can be passed to the program:</p>
-<ul>
-  <li>-f, --fname: Output filename.</li>
-  <li>-s, --surf_type: Surface type. Default is subPLANE.</li>
-  <li>--lmin: Minimal size of mesh. Default is 3.</li>
-  <li>--lmax: Maximal size of mesh. Default is 17.</li>
-  <li>-l: Level. Default is 0.</li>
-  <li>-n: Number of trials. Default is 10000.</li>
-  <li>-v: Verbosity switch. Default is 0.</li>
-  <li>--Np: Z error p points. Default is 10.</li>
-  <li>--pmin: Minimal Z error probability. Default is 0.001.</li>
-  <li>--pmax: Maximal Z error probability. Default is 0.008.</li>
-  <li>-c, --code_model: Code model. Default is 2D.</li>
-  <li>--test: Test switch. Default is 0.</li>
-    <p>This flag enables testing mode, which will run a single decoding simulation for the given size of the mesh and a specified error probability. The simulation process will be printed to the console. The default value of this flag is 0, which means testing mode is disabled.</p>
-  <li>--sweep: Sweep switch. Default is 0.</li>
-  <li>-N, --noise_model: Noise model. Default is INDEP.</li>
-  <li>--seed: Seed switch. Default is 0.</li>
-  <li>--thread: Thread switch. Default is 0.</li>
-  <li>--use_env: Use environment variables. Default is 0.</li>
-</ul>
+<p>This program accepts command-line arguments, which can be used to customize its behavior. The available options for each subprogram are listed in the following table, along with any options that are not available. </p>
+<table>
+  <tr>
+    <th>Option</th>
+    <th>Description</th>
+    <th>Default Value</th>
+    <th>ML3D</th>
+    <th>ML2D</th>
+  </tr>
+  <tr>
+    <td>-f, --fname</td>
+    <td>Output filename</td>
+    <td>N/A</td>
+    <td>&#x2705</td>
+    <td>&#x2705</td>
+  </tr>
+  <tr>
+    <td>-d, --directory</td>
+    <td>Model directory, enter the directory that contains the folder /models</td>
+    <td>../src</td>
+    <td>&#x2705</td>
+    <td>&#x2705</td>
+  </tr>
+  <tr>
+    <td>-m, --model</td>
+    <td>Model name</td>
+    <td>model,L=5(7),layer=5x512,epochs=1000,p=</td>
+    <td>&#x2705</td>
+    <td>&#x2705</td>
+  </tr>
+  <tr>
+    <td>-s, --surf_type</td>
+    <td>Surface type</td>
+    <td>subPLANE</td>
+    <td>&#x2705</td>
+    <td>subTORUS</td>
+  </tr>
+  <tr>
+    <td>--lmin</td>
+    <td>Minimal size of lattice</td>
+    <td>3</td>
+    <td>&#x2705</td>
+    <td>&#x2705</td>
+  </tr>
+  <tr>
+    <td>--lmax</td>
+    <td>Maximal size of lattice</td>
+    <td>17</td>
+    <td>&#x2705</td>
+    <td>&#x2705</td>
+  </tr>
+  <tr>
+    <td>-l</td>
+    <td>Level</td>
+    <td>0</td>
+    <td>&#x2705</td>
+    <td></td>
+  </tr>
+  <tr>
+    <td>-n</td>
+    <td>Number of trials</td>
+    <td>10000</td>
+    <td>&#x2705</td>
+    <td>&#x2705</td>
+  </tr>
+  <tr>
+    <td>-v</td>
+    <td>Verbosity switch which can take value 0-2</td>
+    <td>0</td>
+    <td>&#x2705</td>
+    <td>&#x2705</td>
+  </tr>
+  <tr>
+    <td>--Np</td>
+    <td>Z error p points</td>
+    <td>10</td>
+    <td>&#x2705</td>
+    <td>&#x2705</td>
+  </tr>
+  <tr>
+    <td>--pmin</td>
+    <td>Minimal Z error probability</td>
+    <td>0.001</td>
+    <td>&#x2705</td>
+    <td>0.01</td>
+  </tr>
+  <tr>
+    <td>--pmax</td>
+    <td>MaximalZ error probability</td>
+<td>0.008</td>
+<td>&#x2705</td>
+<td>0</td>
+  </tr>
+  <tr>
+    <td>-c, --code_model</td>
+    <td>Code model</td>
+    <td>2D</td>
+    <td>&#x2705</td>
+    <td></td>
+  </tr>
+  <tr>
+    <td>--test</td>
+    <td>Test switch</td>
+    <td>0</td>
+    <td>&#x2705</td>
+    <td>&#x2705</td>
+  </tr>
+  <tr>
+    <td>--sweep</td>
+    <td>Sweep switch</td>
+    <td>0</td>
+    <td>&#x2705</td>
+    <td></td>
+  </tr>
+  <tr>
+    <td>-N, --noise_model</td>
+    <td>Noise model</td>
+    <td>INDEP</td>
+    <td>&#x2705</td>
+    <td>DEPOL</td>
+  </tr>
+  <tr>
+    <td>--seed</td>
+    <td>Seed switch</td>
+    <td>0</td>
+    <td>&#x2705</td>
+    <td>&#x2705</td>
+  </tr>
+  <tr>
+    <td>--thread</td>
+    <td>Thread switch</td>
+    <td>0</td>
+    <td>&#x2705</td>
+    <td>&#x2705</td>
+  </tr>
+  <tr>
+    <td>--use_env</td>
+    <td>Use environment variables</td>
+    <td>0</td>
+    <td>&#x2705</td>
+    <td>&#x2705</td>
+  </tr>
+</table>
+
 <p>To run the program with default settings, simply run:</p>
 <pre>./simulate</pre>
 
