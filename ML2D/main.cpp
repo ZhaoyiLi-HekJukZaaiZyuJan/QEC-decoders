@@ -186,6 +186,26 @@ void loopDecoding(string directory, string model_name, const int L_min, const in
 	}
 }
 
+
+/** Generate a dataset for training a machine learning model by generating
+trials clusters with errors and extracting local windows around an erroneous
+qubit measurement.
+
+@param trials The number of clusters with errors to generate.
+@param L_min The minimum linear size of the cluster.
+@param P_min The minimum error probability.
+@param P_max The maximum error probability.
+@param seed The seed for the random number generator.
+@param Np The number of processors to use.
+@param fname The output file name.
+@param surf The type of sub-surface on which to generate the cluster.
+@param N The noise model.
+@param verbose Whether to print progress.
+@param thread Whether to use multiple threads.
+@param use_env Whether to use environmental noise.
+@param binary_output Whether to output in binary format.
+@param new_cluster Whether to generate a new cluster.c 23/5/2 -ZL **/
+
 void generator(const int trials, const int L_min, const double P_min, const double P_max, int seed, const int Np, const string fname, subsurfacetype surf, noisemodel N, bool verbose, bool thread, bool use_env, bool binary_output, bool new_cluster){
 	ofstream outfile;
 	outfile.open(fname);
@@ -279,6 +299,7 @@ void generator(const int trials, const int L_min, const double P_min, const doub
 		}
 	}
 }
+
 
 int main(int argc, const char *argv[]) {
 	string fname, directory, model_name;

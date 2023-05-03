@@ -17,7 +17,7 @@ cd tensorflow
 bazel test tensorflow/test/...
   </pre>
   <h2>Testing the Cppflow Package</h2>
-  <p/>
+  <p>
   To test the Cppflow package, go to <code>/CppflowTest</code> and run the following code to compile <code>main.cpp</code>:
   <pre>
   g++ -std=c++17 -o main.out -I ../src/libs/cppflow-master/include/ main.cpp -ltensorflow
@@ -29,6 +29,10 @@ bazel test tensorflow/test/...
   <p>
 </section>
 
+<section>
+<h2>Training a model</h2>
+
+</section>
 <section>
 <h2>Usage</h2>
 <ol>
@@ -42,6 +46,7 @@ bazel test tensorflow/test/...
 </ol>
 <p>If you encounter any issues or have questions, please feel free to open an issue or submit a pull request.</p>
 </section>
+
 
 <section>
   <h2>Variables</h2>
@@ -114,6 +119,13 @@ bazel test tensorflow/test/...
     <td>-v</td>
     <td>Verbosity switch which can take value 0-2</td>
     <td>0</td>
+    <td>&#x2705</td>
+    <td>&#x2705</td>
+  </tr>
+  <tr>
+    <td>--generate</td>
+    <td>Generation mode switch. Do not use this option unless you want to generate training data</td>
+    <td>FALSE</td>
     <td>&#x2705</td>
     <td>&#x2705</td>
   </tr>
