@@ -3,23 +3,28 @@
 //=====================       main.cpp      =========================//
 //===================================================================//
 
-//# based on 3D fast
-//Surf: PLANE; noisemodel: EM2, GATE (two seperate probabilities)
+///system libraries
+#include <fstream>
+#include <functional>
+#include <algorithm>
+#include <utility>
+#include <iomanip>
+#include <assert.h>
+#include <time.h>
+
 #include <filesystem>
 #include <iostream>
-#include <assert.h>
-#include <random>
-#include "../src/vertex.hpp"
-#include "../src/functions.hpp"
-#include "../src/cluster.hpp"
 
-#include "../src/thread_for.hpp"
-#include "../src/libs/cxxopts/cxxopts.hpp"
-#include "../src/libs/blossom5-v2.05.src/GEOM/GeomPerfectMatching.h"
+//personal libraries
+#include <thread_for.hpp>
+#include <cxxopts/cxxopts.hpp>
+#include <PerfectMatching.h>
+#include <GEOM/GeomPerfectMatching.h>
 
-# include <tensorflow/c/c_api.h> //Note: <> include needs -I
-#include "cppflow/ops.h"
-#include "cppflow/model.h"
+//project libraries
+#include <vertex.hpp> //directory added through -I in compiler
+#include <functions.hpp>
+#include <cluster.hpp>
 
 
 
@@ -1150,7 +1155,7 @@ int main(int argc, const char *argv[]) {
 							 );
 	options.add_options()
 	("fname", "filename", cxxopts::value(fname)->default_value(""))
-	("d, directory", "model directory", cxxopts::value(directory)->default_value("/users/VanLadmon/OneDrive - Stanford/PHYSICS/Research/Patrick/ML projects/ML3D/"))
+	("d, directory", "model directory", cxxopts::value(directory)->default_value("../src"))
 	("m, model", "model name", cxxopts::value(model_name)->default_value("model,L=3(7),layer=5x512,epochs=1000,p="))
 	("s", "surface type", cxxopts::value(s)->default_value("PLANE"))
 	("lmin", "Minimal size of mesh", cxxopts::value(lmin)->default_value("3"))
@@ -1181,23 +1186,22 @@ int main(int argc, const char *argv[]) {
 	options.parse(argc, argv);
 
 	if(verbosity >= 1){
-		// cout <<"use_env:" << use_env << "thread" << thread << "test" << test << endl;
-		// cout << "lmin:" << lmin << ";lmax:" << lmax << endl;
-		// cout << "Pmin:" << pmin << ";Pmax:" << pmax << ";nP" << Np << endl;
-		// cout << "Qmin:" << qmin << ";Qmax:" << qmax << ";nQ" << Nq << endl;
-		// cout << "n:" << n << ";seed:" << seed << ";thread:" << thread << ";NN:" << decode_with_NN << endl;
-		// cout << "v:" << verbosity << ";dir:" << dir << endl;
-		// cout << "noise model (N):" << to_string(N) << endl;
-		// cout << "loss model (L):" << to_string(L) << endl;
-		//outputing options;
-		// cout << "hardware_concurrency:" << thread::hardware_concurrency() << endl;
-		// if (use_env) {
-		// 	cout << "SLURM_CPUS_PER_TASK:" << atoi(getenv("SLURM_CPUS_PER_TASK")) << endl;
-		// }
+		cout <<"use_env:" << use_env << "thread" << thread << "test" << test << endl;
+		cout << "lmin:" << lmin << ";lmax:" << lmax << endl;
+		cout << "Pmin:" << pmin << ";Pmax:" << pmax << ";nP" << Np << endl;
+		cout << "Qmin:" << qmin << ";Qmax:" << qmax << ";nQ" << Nq << endl;
+		cout << "n:" << n << ";seed:" << seed << ";thread:" << thread << ";NN:" << decode_with_NN << endl;
+		cout << "v:" << verbosity << ";dir:" << dir << endl;
+		cout << "noise model (N):" << to_string(N) << endl;
+		cout << "loss model (L):" << to_string(L) << endl;
+		// outputing options;
+		cout << "hardware_concurrency:" << thread::hardware_concurrency() << endl;
+		if (use_env) {
+			cout << "SLURM_CPUS_PER_TASK:" << atoi(getenv("SLURM_CPUS_PER_TASK")) << endl;
+		}
 	}
 	
-	
-	
+
 	if (fname == "") {
 		fname = "L=" + to_string(lmin) + ",P=(" + to_string(pmin).substr(3,2) + "," + to_string(pmax).substr(3,2) + "),n=" +to_string(n) + to_string(s) + "," + to_string(N) + ".out";
 	}

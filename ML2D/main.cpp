@@ -1,5 +1,5 @@
 //===================================================================//
-//===================   ML Assisted decoding (make)   =====================//
+//===================   ML Assisted decoding (2D)  ==================//
 //=====================        main.cpp     =========================//
 //===================================================================//
 
@@ -291,11 +291,11 @@ int main(int argc, const char *argv[]) {
 	cxxopts::Options options(*argv,"2D Simulator");
 	options.add_options()
 	("f, fname", "Output filename", cxxopts::value(fname)) 
-	("d, directory", "model directory", cxxopts::value(directory)->default_value("../src/")) //enter the directory that contains the folder /models
-	("m, model", "model parent name", cxxopts::value(model_name)->default_value("model,L=5(7),layer=5x512,epochs=1000,p="))
+	("d, directory", "Model directory", cxxopts::value(directory)->default_value("../src")) //enter the directory that contains the folder /models
+	("m, model", "Model name", cxxopts::value(model_name)->default_value("model,L=5(7),layer=5x512,epochs=1000,p="))
 	("s, surf_type", "Surface type", cxxopts::value(s)->default_value("subTORUS"))
-	("Lmin", "Minimal size of mesh", cxxopts::value(L_min)->default_value("3"))
-	("Lmax", "Maximal size of mesh", cxxopts::value(L_max)->default_value("17"))
+	("Lmin", "Minimal size of lattice", cxxopts::value(L_min)->default_value("3"))
+	("Lmax", "Maximal size of lattice", cxxopts::value(L_max)->default_value("17"))
 	("n", "Number of trials", cxxopts::value(n)->default_value("10000"))
 	("dir", "decoding direction", cxxopts::value(dir)->default_value("0"))
 	
