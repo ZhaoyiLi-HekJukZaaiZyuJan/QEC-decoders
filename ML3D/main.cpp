@@ -56,6 +56,16 @@ MLCluster::MLCluster(const coord& S, const surfacetype& this_surf) : cluster(S, 
 	this->d_error_pos = d_error_pos;
 }
 
+
+
+/**
+If the Noisemodel (N) is not a gate-level one, then it trickles down to this function. The noisemodels could be handled by this function is:
+1. DEPOL1, a noisemodel in direct correspondence with the 2D Toric code.
+2. DEPOL2, a noisemodel that simply deporlarizes all the qubits with the same noise parameter.
+The inputs to this function are:
+
+ **/
+
 void MLCluster::addFullNoise(const double & p, const double & q, const noisemodel N, const lossmodel Nl, const int& seed=0){
 	//Total heuristic Probabilities
 	random_device rd;
@@ -65,22 +75,22 @@ void MLCluster::addFullNoise(const double & p, const double & q, const noisemode
 	}
 	uniform_real_distribution<> dist(0.0, 1.0);
 
-	if (N == DEPOL1){ //2D correspondence
+	if (N == DEPOL1){ //please add more comments to here
 		for (int c = 0; c < 2*S.x*S.y*S.z; c++) {
 			double r = dist(engine);
-			if(r < p*2/3) {
+			if(r < p*2/3) { //X flip
 				c_error_pos[c] = -1;
 			} else {
 				c_error_pos[c] = 1;
 			}
 			coord C(c,S);
-			if(r > p*1/3 && r < p) {
+			if(r > p*1/3 && r < p) { 
 				if (C.l == 0){
 					d_error_pos[coord(C.x,divmod(C.y-1,S.y),C.z,1).hash(S)] = -1;
 				} if (C.l == 1){
 					d_error_pos[coord(divmod(C.x-1,S.x),C.y,C.z,0).hash(S)] = -1;
 				}
-			}else {
+			} else {
 				if (C.l == 0){
 					d_error_pos[coord(C.x,divmod(C.y-1,S.y),C.z,1).hash(S)] = 1;
 				} if (C.l == 1){
@@ -88,7 +98,8 @@ void MLCluster::addFullNoise(const double & p, const double & q, const noisemode
 				}
 			}
 		}
-		for (int c = 2*S.x*S.y*S.z; c < 3*S.x*S.y*S.z; c++) { //depol noise
+		// for the class-3 qubits, add simple depolarization
+		for (int c = 2*S.x*S.y*S.z; c < 3*S.x*S.y*S.z; c++) {
 			double r = dist(engine);
 			if(r < p*2/3) {
 				c_error_pos[c] = -1;
@@ -102,7 +113,7 @@ void MLCluster::addFullNoise(const double & p, const double & q, const noisemode
 				d_error_pos[c] = 1;
 			}
 		}
-	} else if (N == DEPOL2){
+	} else if (N == DEPOL2){ //simple depolarizing noise
 		for (int c = 0; c < 3*S.x*S.y*S.z; c++) {
 			double r = dist(engine);
 			if(r < p*2/3) {
@@ -984,7 +995,6 @@ int verbosity = 0, int thread = 1, bool make_corrections = 0, bool decode_with_N
 	int p_bins = 0 == Np ? 1 : Np;
 	int q_bins = 0 == Nq ? 1 : Nq;
 	int num_correct;
-
 	for (int l = lmin; l <= lmax; l=l+2) {
 		MLCluster testcluster({l,l,l,0}, surf);
 		cout << endl;
@@ -1096,7 +1106,7 @@ int verbosity = 0, int thread = 1, bool make_corrections = 0, bool decode_with_N
 								}
 							}
 						});
-					} else {
+					} else { //No threading
 						for(int i = 0; i < trials; ++i){
 							if (N == GATE) {
 								testcluster.addFullGateNoise(p, N);
@@ -1178,7 +1188,7 @@ int main(int argc, const char *argv[]) {
 	("seed", "seed switch", cxxopts::value(seed)->default_value("0"))
 	("times", "test times switch", cxxopts::value(times)->default_value("0"))
 	("thread", "thread switch", cxxopts::value(thread))
-	("use_env", "use environment variables", cxxopts::value(use_env))
+	("use_env", "use environment variables", cxxopts::value(use_env)->default_value("0"))
 	("test", "test switch", cxxopts::value(test))
 	("make_corrections", "correct qubit", cxxopts::value(make_corrections)->default_value("0"))
 	("decode_with_NN", "turn on NN decoder", cxxopts::value(decode_with_NN)->default_value("0"));
@@ -1201,7 +1211,6 @@ int main(int argc, const char *argv[]) {
 		}
 	}
 	
-
 	if (fname == "") {
 		fname = "L=" + to_string(lmin) + ",P=(" + to_string(pmin).substr(3,2) + "," + to_string(pmax).substr(3,2) + "),n=" +to_string(n) + to_string(s) + "," + to_string(N) + ".out";
 	}
@@ -1219,11 +1228,17 @@ int main(int argc, const char *argv[]) {
 		}
 		while (i < times);
 	} else if (generate) {
-		if (fname == "") {
-			fname = "train_data/train_set_L=" + to_string(Sw) + ",P=(" + to_string(pmin).substr(3,2) + "," + to_string(pmax).substr(3,2) + "),n=" +to_string(n) + ".out";
+		try {
+			if (fname == "") {
+				throw "Output filename not provided!";
+			}
+		}catch (const char* error_message) {
+        std::cerr << error_message << std::endl;
 		}
+
 		generator(n, pmin, qmin, seed, Np-1, directory + fname, s, N, L, verbosity, thread, use_env);
 	} else{
+		cout << "running loop decoding...";
 		loopDecoding(directory, model_name, lmin, lmax, n, pmin, pmax, Np-1, qmin, qmax, Nq-1, fname, s, N, L, verbosity, thread, make_corrections, decode_with_NN, dir);
 	}
 	return return_value;

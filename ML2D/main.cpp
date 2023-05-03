@@ -267,8 +267,8 @@ void generator(const int trials, const int L_min, const double P_min, const doub
 				}
 				
 				subcoord C(c,testcluster.S);
-				// testcluster.printQubit();
-			    // testcluster.printQubit(c);
+				testcluster.printQubit();
+			    testcluster.printQubit(c);
 
 				vector<float> window = testcluster.getWindow(C);
 

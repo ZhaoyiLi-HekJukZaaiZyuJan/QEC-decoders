@@ -5,8 +5,13 @@ import pandas as pd
 import argparse
 import subprocess
 import sys
+import os
 
 def main(argv):
+    # Create the local file for training data. This directory can be modified.
+    os.mkdir("train_data")
+    print("created new train_data directory")
+
     parser = argparse.ArgumentParser(description='Simulation parser')
     parser.add_argument('-p','--probability',default = "0.001")
     parser.parse_args()
@@ -27,8 +32,15 @@ def main(argv):
 
     for i in range(10000):
         print(i)
-        subprocess.run(''.join(['export DYLD_LIBRARY_PATH=${DYLD_LIBRARY_PATH}:~/libtensorflow2/lib; ./simulate -s TORUS -N DEPOL1 --pmin ',str(p),'  --Np 1 -n 512 --Lmin 7 -v 0 --generate -d \"/scratch/users/ladmon/ML3D/\" --fname \"train_data/depol1xydata,L=5(7),layer=5x256,epochs=10000,p=',str(p),'.csv\"']), shell=True)
-        df=pd.read_csv("".join(['/scratch/users/ladmon/ML3D/train_data/depol1xydata,L=5(7),layer=5x256,epochs=10000,p=',str(p),'.csv']))
+        # The following subprocess:
+        #   export library path to update the directory of the TF library. 
+        #   run the "simulate" code to generate data "on the fly" and outputs the generated data in a CSV file in the local train_data folder
+        # Here is a line of code to test whether the subprocess work, run it from ML3D:
+             # ./simulate -s TORUS -N DEPOL1 --pmin 0.001  --Np 1 -n 512 --lmin 7 -v 0 --generate -d "/scratch/users/ladmon/ML3D/" --fname "train_data/depol1xydata,L=5(7),layer=5x256,epochs=10000,p=0.001.csv"
+        subprocess.run(''.join(['export DYLD_LIBRARY_PATH=${DYLD_LIBRARY_PATH}:~/libtensorflow2/lib; \
+                                ./simulate -s TORUS -N DEPOL1 --pmin ',str(p),'  --Np 1 -n 512 --lmin 7 -v 0 --generate \
+                                -d \"/scratch/users/ladmon/ML3D/\" --fname \"train_data/depol1xydata,L=5(7),layer=5x256,epochs=10000,p=',str(p),'.csv\"']), shell=True)
+        df=pd.read_csv("".join(['train_data/depol1xydata,L=5(7),layer=5x256,epochs=10000,p=',str(p),'.csv']))
         X = df.values[:,0:180]
         Y = df.values[:,180:181]
         model.fit(X, Y, epochs=1,batch_size=512)
