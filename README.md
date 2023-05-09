@@ -1,7 +1,21 @@
 <h1>QEC-decoders</h1>
+<header>
 <p>This repository contains several decoders for topological quantum error correction. The decoders are implemented in C++ and use the Blossom V algorithm for maximum-weight perfect matching. The parts marked in grey is optional to read. </p>
 
+<h2>Teble of Contents</h2>
+
+- [QEC-decoders](#qec-decoders)
+  - [Dependencies](#dependencies)
+    - [Setting up TensorFlow Dependencies](#setting-up-tensorflow-dependencies)
+    - [Testing the Cppflow Package](#testing-the-cppflow-package)
+  - [Setting up python dependencies](#setting-up-python-dependencies)
+  - [Training a model](#training-a-model)
+  - [Usage](#usage)
+  - [Variables](#variables)
+  - [Noise Models](#noise-models)
+</header>
 <section>
+  <h1>Dependencies</h1>
   <h2>Setting up TensorFlow Dependencies</h2>
   <p>If your system does not have TensorFlow installed, you can build TensorFlow with the following commands:</p>
   <pre>
@@ -41,11 +55,13 @@ To run the code, please use python3.8+, and install everything form the file <co
 
 
 <section>
-<h2>Training a model</h2>
+<h1>Training a model</h1>
 
-With all the correct dependencies installed, run the file <code> create_model.py</code> from its parent directory <code> ML3D </code>.
+<h2> Training model locally </h2>
+With all the correct dependencies installed, run the file <code> create_model.py</code> from its parent directorie <code>ML2D</code> or <code>ML3D</code>. The file accepts one command argument <code>p</code> for the physical error rate. 
 
-
+<h2> Training model on remote cluster </h2>
+The script provided <code>train.script</code> can be used to train models on remote clusters. The current parameters is calibrated for the Stanford Sherlock cluster.
 
 </section>
 <section>
@@ -70,6 +86,7 @@ With all the correct dependencies installed, run the file <code> create_model.py
   <tr>
     <th>Option</th>
     <th>Description</th>
+    <th>Type</th>
     <th>Default Value</th>
     <th>ML3D</th>
     <th>ML2D</th>
@@ -77,6 +94,7 @@ With all the correct dependencies installed, run the file <code> create_model.py
   <tr>
     <td>-f, --fname</td>
     <td>Output filename</td>
+    <td>string</td>
     <td>N/A</td>
     <td>&#x2705</td>
     <td>&#x2705</td>
@@ -84,6 +102,7 @@ With all the correct dependencies installed, run the file <code> create_model.py
   <tr>
     <td>-d, --directory</td>
     <td>Model directory, enter the directory that contains the folder /models</td>
+    <td>string</td>
     <td>../src</td>
     <td>&#x2705</td>
     <td>&#x2705</td>
@@ -91,6 +110,7 @@ With all the correct dependencies installed, run the file <code> create_model.py
   <tr>
     <td>-m, --model</td>
     <td>Model name</td>
+    <td>string</td>
     <td>model,L=5(7),layer=5x512,epochs=1000,p=</td>
     <td>&#x2705</td>
     <td>&#x2705</td>
@@ -98,6 +118,7 @@ With all the correct dependencies installed, run the file <code> create_model.py
   <tr>
     <td>-s, --surf_type</td>
     <td>Surface type</td>
+    <td>surfacetype</td>
     <td>subPLANE</td>
     <td>&#x2705</td>
     <td>subTORUS</td>
@@ -105,6 +126,7 @@ With all the correct dependencies installed, run the file <code> create_model.py
   <tr>
     <td>--lmin</td>
     <td>Minimal size of lattice</td>
+    <td>int</td>
     <td>3</td>
     <td>&#x2705</td>
     <td>&#x2705</td>
@@ -112,13 +134,15 @@ With all the correct dependencies installed, run the file <code> create_model.py
   <tr>
     <td>--lmax</td>
     <td>Maximal size of lattice</td>
+    <td>int</td>
     <td>17</td>
     <td>&#x2705</td>
     <td>&#x2705</td>
   </tr>
   <tr>
     <td>-l</td>
-    <td>Level</td>
+    <td>Level (Confidence level of adopting NN correction)</td>
+    <td>int</td>
     <td>0</td>
     <td>&#x2705</td>
     <td></td>
@@ -126,13 +150,15 @@ With all the correct dependencies installed, run the file <code> create_model.py
   <tr>
     <td>-n</td>
     <td>Number of trials</td>
+    <td>int</td>
     <td>10000</td>
     <td>&#x2705</td>
     <td>&#x2705</td>
   </tr>
   <tr>
     <td>-v</td>
-    <td>Verbosity switch which can take value 0-2</td>
+    <td>Verbosity switch</td>
+    <td>int between 0-2</td>
     <td>0</td>
     <td>&#x2705</td>
     <td>&#x2705</td>
@@ -140,6 +166,48 @@ With all the correct dependencies installed, run the file <code> create_model.py
   <tr>
     <td>--generate</td>
     <td title="This function is used by the generation code on the fly. Do not use this option unless you want to generate training data. ">Generation mode switch</td>
+    <td>bool</td>
+    <td>FALSE</td>
+    <td>&#x2705</td>
+    <td>&#x2705</td>
+  </tr>
+  <tr>
+    <td>--binary</td>
+    <td title="The training data consists two parts, the first w*w*2 digits denote the window information, and last one denotes the type of Pauli error existing locally. Namely, 0123 corresponds to I Z X Y. If the binary switch is on, however, we use the alternative 2-bit representation of the error, namely 00, 01, 10, 11.">
+    training data format switch</td>
+    <td>bool</td>
+    <td>FALSE</td>
+    <td>&#x2705</td>
+    <td>&#x2705</td>
+  </tr>
+   <tr>
+    <td>--make corrections</td>
+    <td>binary data format switch</td>
+    <td>bool</td>
+    <td>FALSE</td>
+    <td>&#x2705</td>
+    <td>&#x2705</td>
+  </tr>
+  <tr>
+    <td>--decode_with_NN</td>
+    <td>switch for NN decoder</td>
+    <td>bool</td>
+    <td>FALSE</td>
+    <td>&#x2705</td>
+    <td>&#x2705</td>
+  </tr>
+  <tr>
+    <td>--cutoff</td>
+    <td>acceptance cutoff</td>
+    <td>float between 0 and 1</td>
+    <td>1</td>
+    <td>&#x2705</td>
+    <td>&#x2705</td>
+  </tr>
+  <tr>
+    <td>--new</td>
+    <td>switch to generate a new cluster for every simulation</td>
+    <td>bool</td>
     <td>FALSE</td>
     <td>&#x2705</td>
     <td>&#x2705</td>
@@ -147,6 +215,7 @@ With all the correct dependencies installed, run the file <code> create_model.py
   <tr>
     <td>--Np</td>
     <td>Z error p points</td>
+    <td>int</td>
     <td>10</td>
     <td>&#x2705</td>
     <td>&#x2705</td>
@@ -154,6 +223,7 @@ With all the correct dependencies installed, run the file <code> create_model.py
   <tr>
     <td>--pmin</td>
     <td>Minimal Z error probability</td>
+    <td>float between 0 and 1</td>
     <td>0.001</td>
     <td>&#x2705</td>
     <td>0.01</td>
@@ -161,13 +231,15 @@ With all the correct dependencies installed, run the file <code> create_model.py
   <tr>
     <td>--pmax</td>
     <td>MaximalZ error probability</td>
-<td>0.008</td>
-<td>&#x2705</td>
-<td>0</td>
+    <td>float between 0 and 1</td>
+	<td>0.008</td>
+	<td>&#x2705</td>
+	<td>0</td>
   </tr>
   <tr>
     <td>-c, --code_model</td>
     <td>Code model</td>
+    <td>codemodel</td>
     <td>2D</td>
     <td>&#x2705</td>
     <td></td>
@@ -175,6 +247,7 @@ With all the correct dependencies installed, run the file <code> create_model.py
   <tr>
     <td>--test</td>
     <td>Test switch</td>
+    <td>bool</td>
     <td>0</td>
     <td>&#x2705</td>
     <td>&#x2705</td>
@@ -182,6 +255,7 @@ With all the correct dependencies installed, run the file <code> create_model.py
   <tr>
     <td>--sweep</td>
     <td>Sweep switch</td>
+    <td>bool</td>
     <td>0</td>
     <td>&#x2705</td>
     <td></td>
@@ -189,6 +263,7 @@ With all the correct dependencies installed, run the file <code> create_model.py
   <tr>
     <td title="Please refer to the next section for more details on the different noise models"> -N, --noise_model</td>
     <td>Noise model</td>
+    <td>noisemodel</td>
     <td>INDEP</td>
     <td>&#x2705</td>
     <td>DEPOL</td>
@@ -196,6 +271,7 @@ With all the correct dependencies installed, run the file <code> create_model.py
   <tr>
     <td>--seed</td>
     <td>Seed switch</td>
+    <td>bool</td>
     <td>0</td>
     <td>&#x2705</td>
     <td>&#x2705</td>
@@ -203,6 +279,7 @@ With all the correct dependencies installed, run the file <code> create_model.py
   <tr>
     <td>--thread</td>
     <td>Thread switch</td>
+    <td>bool</td>
     <td>0</td>
     <td>&#x2705</td>
     <td>&#x2705</td>
@@ -210,6 +287,7 @@ With all the correct dependencies installed, run the file <code> create_model.py
   <tr>
     <td>--use_env</td>
     <td>Use environment variables</td>
+    <td>bool</td>
     <td>0</td>
     <td>&#x2705</td>
     <td>&#x2705</td>
@@ -347,7 +425,33 @@ With all the correct dependencies installed, run the file <code> create_model.py
 <p>If no output filename is specified, the program will create a default output file name based on the input parameters.</p>
 </section>
 
+<h2>Lattice Geometry</h2>
+For the 2D square systems, we label our lattice with the three tuple (x,y,l), where l=0 labels the y-directional edges and l=1 the x-directional. Sometimes we will use a "hash" value of the coordinate, defined as l*S_x*S_y+x*S_y+y. The ◯ symbol markes the check operators, and <span style="color: green;">⊕</span> markes the triggered syndrom measurement. The physical Pauli errors are marked as <span style="color: cyan;">Z</span>, <span style="color: cyan;">Y</span>, and <span style="color: cyan;">X</span>. Hover your mouse on the lattice below to see the respective numbers. 
 
+<pre>
+◯|<span title="(0,0,0)"> </span>|◯|<span title="(1,0,0)"> </span>|◯|<span title="(2,0,0)"> </span>|◯|<span title="(3,0,0)"> </span>|◯|<span title="(4,0,0)"> </span>|◯|<span title="(5,0,0)"> </span>|◯|<span title="(6,0,0)"> </span>|
+<span title="(0,0,1)"> </span>| |<span title="(1,0,1)"> </span>| |<span title="(2,0,1)"> </span>| |<span title="(3,0,1)"> </span>| |<span title="(4,0,1)"> </span>| |<span title="(5,0,1)"> </span>| |<span title="(6,0,1)"> </span>| |
+◯|<span title="(0,1,0)"> </span>|◯|<span title="(1,1,0)"> </span>|◯|<span title="(2,1,0)"> </span>|◯|<span title="(3,1,0)"> </span>|◯|<span title="(4,1,0)"> </span>|◯|<span title="(5,1,0)"> </span>|◯|<span title="(6,1,0)"> </span>|
+<span title="(0,1,1)"> </span>| |<span title="(1,1,1)"> </span>| |<span title="(2,1,1)"> </span>| |<span title="(3,1,1)"> </span>| |<span title="(4,1,1)"> </span>| |<span title="(5,1,1)"> </span>| |<span title="(6,1,1)"> </span>| |
+</pre>
+<p>We can print out the configuration of the lattice with the function <code>.printQubit()</code></p>
+<p>The typical output is of the form</p>
+<pre>◯| |◯| |◯| |◯| |◯| |◯| |◯| |
+ | | | | | | | | | | | | | |
+◯| |◯| |◯| |◯| |◯| |◯| |◯| |
+ | | | | | | | | | | | | | |
+◯| |◯| |<span style="color: green;">⊕</span>|<span style="color: cyan;">Z</span>|<span style="color: green;">⊕</span>| |◯| |◯| |◯| |
+ | | | | | | | | | | | | | |
+◯| |◯| |◯| |◯| |◯| |◯| |◯| |
+ | | | | | | | | | | | | | |
+◯| |◯| |◯| |◯| |◯| |◯| |◯| |
+ | | | | | | | | | | | | | |
+◯| |◯| |◯| |◯| |◯| |◯| |◯| |
+ | | | | | | | | | | | | | |
+◯| |◯| |◯| |◯| |◯| |◯| |◯| |
+ | | | | | | | | | | | | | |</pre>
+ 
+ 
 <h2>Examples</h2>
 
 Here are some examples of how to use the program with different command line arguments:
@@ -356,7 +460,7 @@ Here are some examples of how to use the program with different command line arg
 ./simulate -s subTORUS --pmin 0 --pmax 0.18  --Np 25 -n 1000 --Lmin 5 --Lmax 5 -v 1 -d ~/ML/ -m "model,L=5(7),layer=3x128,epochs=10000,p=" --decode_with_NN
 </pre>
 rcx
-This command will run simulations for a subTORUS surface with a range of error probabilities between 0 and 0.18, which passes the transition error rate of around 0.15, using 25 p points and 1000 trials per point. The size of the mesh will be fixed at 5, and a neural network model with architecture 3x128 and 10000 epochs will be used for decoding. The results will be saved to the specified output directory with a filename that includes the model and input parameters. [expand a bit on the directory ]
+This command will run simulations for a subTORUS surface with a range of error probabilities between 0 and 0.18, which passes the transition error rate of around 0.15, using 25 p points and 1000 trials per point. The size of the mesh will be fixed at 5, and a neural network model with architecture 3x128 and 10000 epochs will be used for decoding. The results will be saved to the specified output directory with a filename that includes the model and input parameters.
 
 <pre>
 ./simulate -s subTORUS --pmin 0 --pmax 0.12  --Np 25 -n 1000 --Lmin 3 --Lmax 20 -v 1 -d ~/ML/  --fname test.out
@@ -370,3 +474,5 @@ This command will run simulations for a subTORUS surface with a range of error p
 <pre>
 ./simulate -s subTORUS --pmin 0.02 --pmax 0.02  --Np 20 -n 1 --Lmin 7 -v 1 --generate -d ~/ML
 </pre>
+
+<h1>Dependencies</h1>

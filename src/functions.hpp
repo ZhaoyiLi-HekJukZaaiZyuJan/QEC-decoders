@@ -14,7 +14,12 @@
 # include "types.hpp"
 
 using namespace std;
+
 //===================================================================//
+// These functions are stream insertion/extraction and string conversion
+// operators for various enumerated types.
+//===================================================================//
+
 istream& operator>> (istream&, surfacetype&);
 string To_string(surfacetype&);
 ostream& operator<< (ostream&, surfacetype&);
@@ -36,7 +41,6 @@ string To_string(lossmodel&);
 ostream& operator<< (ostream&, lossmodel&);
 
 typedef function<pair<double, double>(double,double)> lossmodelfunc;
-
 extern std::map<lossmodel, lossmodelfunc> LOSSMODELMAP;
 
 //===================================================================//
@@ -48,6 +52,7 @@ extern std::map<lossmodel, lossmodelfunc> LOSSMODELMAP;
 //EM2:
 //GATE:
 // TEST:
+//===================================================================//
 
 istream& operator>> (istream&, noisemodel&);
 string To_string(noisemodel&);
@@ -59,7 +64,9 @@ extern int myint;
 extern std::map<noisemodel, noisemodelfunc> NOISEMODELMAP;
 
 
-//################################## vector printing ##############################
+//################################## vector printing ##################
+//===================================================================//
+
 template <class T>
 ostream& operator<<(ostream&, const vector<T>);
 

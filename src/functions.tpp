@@ -1,3 +1,5 @@
+// implementation of the vector printing functions
+
 template <class T>
 ostream& operator<<(ostream& os, const vector<T> vec) {
 	for (int i = 0; i < vec.size(); i++) {

@@ -30,6 +30,7 @@ def main(argv):
     model.compile(loss='BinaryCrossentropy', optimizer='adam', metrics=['mse',tf.keras.metrics.BinaryAccuracy()])
 
 
+
     for i in range(10000):
         print(i)
         # The following subprocess:

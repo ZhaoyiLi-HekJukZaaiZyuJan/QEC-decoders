@@ -198,6 +198,7 @@ qubit measurement.
 @param seed The seed for the random number generator.
 @param Np The number of processors to use.
 @param fname The output file name.
+	The filename by default takes the form train_data/train_set_L=<windowsize>,(P=<first 2 digits of P_min>,<first 2 digits of P_max>),n=<number of trils>.out"
 @param surf The type of sub-surface on which to generate the cluster.
 @param N The noise model.
 @param verbose Whether to print progress.
@@ -267,13 +268,15 @@ void generator(const int trials, const int L_min, const double P_min, const doub
 				}
 				
 				subcoord C(c,testcluster.S);
-				testcluster.printQubit();
-			    testcluster.printQubit(c);
+
+				if (verbose > 0) {
+					testcluster.printQubit();
+				}
 
 				vector<float> window = testcluster.getWindow(C);
 
 				if (binary_output) {
-					outfile << window << (testcluster.z_error_pos[c]+1)/2 << ", " <<  (testcluster.x_error_pos[c]+1)/2 << endl;
+					outfile << window << (testcluster.z_error_pos[c]+1)/2 << "|" <<  (testcluster.x_error_pos[c]+1)/2 << endl;
 				} else{
 					int choice;
 					if ((testcluster.z_error_pos[c]+1)/2) {
@@ -315,8 +318,8 @@ int main(int argc, const char *argv[]) {
 	("d, directory", "Model directory", cxxopts::value(directory)->default_value("../src")) //enter the directory that contains the folder /models
 	("m, model", "Model name", cxxopts::value(model_name)->default_value("model,L=5(7),layer=5x512,epochs=1000,p="))
 	("s, surf_type", "Surface type", cxxopts::value(s)->default_value("subTORUS"))
-	("Lmin", "Minimal size of lattice", cxxopts::value(L_min)->default_value("3"))
-	("Lmax", "Maximal size of lattice", cxxopts::value(L_max)->default_value("17"))
+	("lmin", "Minimal size of lattice", cxxopts::value(L_min)->default_value("3"))
+	("lmax", "Maximal size of lattice", cxxopts::value(L_max)->default_value("17"))
 	("n", "Number of trials", cxxopts::value(n)->default_value("10000"))
 	("dir", "decoding direction", cxxopts::value(dir)->default_value("0"))
 	
@@ -324,7 +327,7 @@ int main(int argc, const char *argv[]) {
 	("generate", "generation mode switch", cxxopts::value(generate_mode)->default_value("0"))
 	("binary", "binary data format switch", cxxopts::value(binary_output)->default_value("0"))
 	("make_corrections", "make corrections to result", cxxopts::value(make_corrections)->default_value("0"))
-	("decode_with_NN", "turn on NN decoder", cxxopts::value(decode_with_NN)->default_value("0"))
+	("decode_with_NN", "switch for NN decoder", cxxopts::value(decode_with_NN)->default_value("0"))
 	("cutoff", "NN decoder acceptance cutoff", cxxopts::value(cutoff)->default_value("1"))
 	("new", "new cluster", cxxopts::value(new_cluster)->default_value("0"))
 	
@@ -364,7 +367,7 @@ int main(int argc, const char *argv[]) {
 		}
 	} else if (generate_mode) {
 		if (fname == "") {
-			fname = "/users/vanladmon/OneDrive - Stanford/PHYSICS/Research/Patrick/ML make/train_data/train_set_L=" + to_string(window_size) + ",P=(" + to_string(P_min).substr(3,2) + "," + to_string(P_max).substr(3,2) + "),n=" +to_string(n) + ".out";
+			fname = "train_data/train_set_L=" + to_string(window_size) + ",P=(" + to_string(P_min).substr(3,2) + "," + to_string(P_max).substr(3,2) + "),n=" +to_string(n) + ".out";
 		}
 		generator(n, L_min, P_min, P_max, seed, Np-1, fname, s, N, verbose, thread, use_env, binary_output, new_cluster);
 	} else {

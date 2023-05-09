@@ -5,9 +5,17 @@ import pandas as pd
 import argparse
 import subprocess
 import sys
+import os
 
 def main(argv):
-    parser = argparse.ArgumentParser(description='Simulation parser')
+    # Create the local file for training data. This directory can be modified.
+    isExist = os.path.exists("train_data")
+    if not isExist:
+        # Create a new directory because it does not exist
+        os.mkdir("train_data")
+        print("created new train_data directory")
+
+    parser = argparse.ArgumentParser(description='Simulation paprser')
     parser.add_argument('-p','--probability',default = "0.001")
     parser.parse_args()
     args = parser.parse_args()
@@ -26,11 +34,18 @@ def main(argv):
     myopt = tf.keras.optimizers.Adam()
     model.compile(loss='categorical_crossentropy', optimizer=myopt, metrics=['accuracy'])
 
-
     for i in range(10000):
         print(i)
-        subprocess.run(''.join(['export DYLD_LIBRARY_PATH=${DYLD_LIBRARY_PATH}:~/libtensorflow2/lib; ./simulate -s TORUS --pmin ',str(p),' -n 512 --Lmin 7 --Lmax 7 -v 0 --generate --new --fname \"/scratch/users/ladmon/ML/train_data/model_shuttle,L=5(7),layer=3x128,epochs=10000,p=',str(p),'.csv\"']), shell=True)
-        df=pd.read_csv("".join(['/scratch/users/ladmon/ML/train_data/model_shuttle,L=5(7),layer=3x128,epochs=10000,p=',str(p),'.csv']))
+        # The following subprocess (please refer to ML3D for the original version):
+        #   export library path to update the directory of the TF library. 
+        #   run the "simulate" code to generate data "on the fly" and outputs the generated data in a CSV file in the local train_data folder
+        # Here is a line of code to test whether the subprocess work, run it from ML2D:
+             # ./simulate -s TORUS -N DEPOL1 --pmin 0.001 -n 512 --lmin 7 --lmax 7 -v 0 --generate --new --fname "train_data/model_shuttle,L=5(7),layer=3x128,epochs=10000,p=0.001.csv"
+        subprocess.run(''.join(['export DYLD_LIBRARY_PATH=${DYLD_LIBRARY_PATH}:~/libtensorflow2/lib; \
+                                ./simulate -s TORUS -N DEPOL1 --pmin ',str(p),' -n 512 --lmin 7 --lmax 7 -v 0 --generate \
+                                    --new --fname \"train_data/model_shuttle,L=5(7),layer=3x128,epochs=10000,p=',str(p),'.csv\"']), shell=True)
+        df=pd.read_csv("".join(['train_data/model_shuttle,L=5(7),layer=3x128,epochs=10000,p=',str(p),'.csv']),delimiter="|")
+        # tensor shape: windowsize*windowsize *2
         X = df.values[:,0:25*2]
         Y = df.values[:,25*2:25*2+1]
         # one hot encoding
