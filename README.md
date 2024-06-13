@@ -26,7 +26,7 @@ bazel test tensorflow/test/...
   (tensor: shape=[3], dtype=TF_DOUBLE, data=[2 3 4])
   </pre>
   <p>
-  <p>Note: Be sure to check <a href="https://www.tensorflow.org/install/lang_c">https://www.tensorflow.org/install/lang_c</a> for appropriate versions. for more details.</p>
+  <p>Note: Be sure to check <a href="https://www.tensorflow.org/install/lang_c">https://www.tensorflow.org/install/lang_c</a> for more details.</p>
 </section>
 
 <section>
