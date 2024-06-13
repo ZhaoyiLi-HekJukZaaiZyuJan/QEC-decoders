@@ -9,11 +9,10 @@ FILENAME= #(Set your filename here, e.g. libtensorflow-cpu-linux-x86_64-2.15.0.t
 wget -q --no-check-certificate https://storage.googleapis.com/tensorflow/libtensorflow/${FILENAME}
 sudo tar -C /usr/local -xzf ${FILENAME}
   </pre>
-  <p>To ensure that your local TensorFlow dependencies are correctly set up, you can try compiling the source code in the TensorFlow test folder:</p>
+  <p>To ensure that your local TensorFlow dependencies are correctly set up, you can try compiling the source code in the TFtest folder:</p>
   <pre>
-cd tensorflow
-./configure
-bazel test tensorflow/test/...
+gcc hello_tf.c -ltensorflow -o hello_tf
+./hello_tf
   </pre>
   <h2>Testing the Cppflow Package</h2>
   <p/>
