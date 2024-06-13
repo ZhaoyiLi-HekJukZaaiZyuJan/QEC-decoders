@@ -5,7 +5,7 @@
   <h2>Setting up TensorFlow Dependencies</h2>
   <p>If your system does not have TensorFlow installed, you can build TensorFlow with the following commands:</p>
   <pre>
-FILENAME= #(Set your filename here, e.g. libtensorflow-cpu-linux-x86_64-2.15.0.tar.gz)
+FILENAME=#(Set your filename here, e.g. libtensorflow-cpu-linux-x86_64-2.15.0.tar.gz)
 wget -q --no-check-certificate https://storage.googleapis.com/tensorflow/libtensorflow/${FILENAME}
 sudo tar -C /usr/local -xzf ${FILENAME}</pre>
   <p>To ensure that your local TensorFlow dependencies are correctly set up, you can try compiling the source code in the TFtest folder:</p>
