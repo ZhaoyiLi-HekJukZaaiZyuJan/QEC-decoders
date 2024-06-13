@@ -31,7 +31,7 @@ gcc hello_tf.c -ltensorflow -o hello_tf
 <ol>
   <li>Make the src files:</li>
     <pre>cd src/libs/blossom5-v2.05.src <br>make <br>cd ../../.. </pre>
-  <li>Make the project files:</li>
+  <li>Go to a project folder, e.g. 2D, and make the project files:</li>
     <pre>make</pre>
   <li>Run the executable:</li>
     <pre>./simulate</pre>
