@@ -14,7 +14,7 @@ gcc hello_tf.c -ltensorflow -o hello_tf
 ./hello_tf</pre>
   <h2>Testing the Cppflow Package</h2>
   <p/>
-  To test the Cppflow package, go to <code>/CppflowTest</code> and run the following code to compile <code>main.cpp</code>:
+  To test the Cppflow package, go to <code>CppflowTest</code> and run the following code to compile <code>main.cpp</code>:
   <pre>
   g++ -std=c++17 -o main.out -I ../src/libs/cppflow-master/include/ main.cpp -ltensorflow
   </pre>
