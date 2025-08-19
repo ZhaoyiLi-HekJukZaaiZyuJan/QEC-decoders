@@ -1,30 +1,47 @@
-#definition of a recursive wildcard "ref: https://stackoverflow.com/questions/2483182/recursive-wildcards-in-gnu-make"
-rwildcard=$(foreach d,$(wildcard $(1:=/*)),$(call rwildcard,$d,$2) $(filter $(subst *,%,$2),$d))
+# ---- sources/objects -------------------------------------------------
+# recursive wildcard (ref: https://stackoverflow.com/q/2483182)
+rwildcard = $(foreach d,$(wildcard $(1)/*),$(call rwildcard,$d,$2)) \
+            $(filter $(subst *,%,$2),$(wildcard $(1)/$2))
 
-DIRS := . ../src
-SOURCES := $(foreach dir, $(DIRS), $(wildcard $(dir)/*.cpp))
-#search for all object files in blossom5 folder
-BLOSSOM_OBJECTS:= $(call rwildcard, ../src/libs/blossom5-v2.05.src,*.o)
-OBJS := $(patsubst %.cpp, %.o, $(SOURCES))
+DIRS     := . ../src
+# (non-recursive sources, same as your original)
+SOURCES  := $(foreach dir,$(DIRS),$(wildcard $(dir)/*.cpp))
+OBJS     := $(patsubst %.cpp,%.o,$(SOURCES))
 
-CFLAGS := -std=c++17 -ltensorflow -lpthread -no-pie -fmax-errors=5 -O3 -I ../src \
-		-I ../src/libs/ \
-		-I ../src/libs/blossom5-v2.05.src \
-		-I ../src/libs/cppflow-master/include \
-		-I ../src/libs/cppflow-master/include/cppflow
-CXX ?= g++
-INCLUDES :=
-LIBDIR :=
+# search for all object files in blossom5 folder (recursive)
+BLOSSOM_OBJECTS := $(call rwildcard,../src/libs/blossom5-v2.05.src,*.o)
 
+# ---- toolchain -------------------------------------------------------
+CXX ?= g++          # on macOS you can also use: clang++
+
+# ---- include & compile flags ----------------------------------------
+CXXFLAGS := -std=c++17 -O3 \
+            -I/usr/local/include \
+            -I../src \
+            -I../src/libs \
+            -I../src/libs/blossom5-v2.05.src \
+            -I../src/libs/cppflow-master/include \
+            -I../src/libs/cppflow-master/include/cppflow
+# clang warns -fmax-errors is unused; keep or drop as you like:
+# CXXFLAGS += -fmax-errors=5
+
+# ---- link flags & libs ----------------------------------------------
+# Tell the linker where to find libtensorflow, and embed an rpath so dyld
+# finds it without DYLD_LIBRARY_PATH (macOS).
+LDFLAGS  := -L/usr/local/lib -Wl,-rpath,/usr/local/lib
+LDLIBS   := -ltensorflow -lpthread
+
+# ---- targets ---------------------------------------------------------
+.PHONY: all clean
 all: simulate
 
-simulate: ${OBJS}
-	$(CXX) $(CFLAGS) ${BLOSSOM_OBJECTS} -o $@ ${OBJS} ${LIBS}
+simulate: $(OBJS) $(BLOSSOM_OBJECTS)
+	$(CXX) $(LDFLAGS) -o $@ $(OBJS) $(BLOSSOM_OBJECTS) $(LDLIBS)
 
-.cpp.o:
-	$(CXX) $(CFLAGS) ${INCLUDES} $< -c -o $@ | echo $<
+# compile rule (no link flags here)
+%.o: %.cpp
+	$(CXX) $(CXXFLAGS) -c $< -o $@
+	@echo "compiled $<"
 
 clean:
-	rm -f ${OBJS} simulate
-
-		
+	rm -f $(OBJS) simulate

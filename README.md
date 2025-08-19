@@ -6,14 +6,17 @@
   <p>If your system does not have TensorFlow installed, you can build TensorFlow with the following commands:</p>
   <pre>
 FILENAME=#(Set your filename here, e.g. libtensorflow-cpu-linux-x86_64-2.15.0.tar.gz)
-wget -q --no-check-certificate https://storage.googleapis.com/tensorflow/libtensorflow/${FILENAME}
-sudo tar -C /usr/local -xzf ${FILENAME}</pre>
+wget -q --no-check-certificate https://storage.googleapis.com/tensorflow/versions/(add versions)/libtensorflow/${FILENAME}
+sudo tar -C /usr/local -xzf ${FILENAME}
+export DYLD_LIBRARY_PATH=/usr/local/lib:$DYLD_LIBRARY_PATH
+./hello_tf</pre>
+
   <p>To ensure that your local TensorFlow dependencies are correctly set up, you can try compiling the source code in the TFtest folder:</p>
   <pre>
 gcc hello_tf.c -ltensorflow -o hello_tf
 ./hello_tf</pre>
   <h2>Testing the Cppflow Package</h2>
-  <p/>
+  <p>
   To test the Cppflow package, go to <code>CppflowTest</code> and run the following code to compile <code>main.cpp</code>:
   <pre>
   g++ -std=c++17 -o main.out -I ../src/libs/cppflow-master/include/ main.cpp -ltensorflow
@@ -107,3 +110,71 @@ This command will run simulations for a subTORUS surface with a range of error p
 <pre>
 ./simulate -s subTORUS --pmin 0.02 --pmax 0.02  --Np 20 -n 1 --Lmin 7 -v 1 --generate -d ~/ML
 </pre>
+
+Here’s an HTML block you can paste straight into your README.md (GitHub renders inline HTML):
+
+<h3>Coordinate Convention</h3>
+
+<p>
+This code labels qubits/checks with a 4-tuple <code>(x, y, z, l)</code> on a 3D periodic grid.
+The spatial sizes are <code>(L, M, N)</code> and the sublattice index is <code>l</code>. For qubits, <code>l</code> ranges from 0 to 2.
+</p>
+
+<table>
+  <thead>
+    <tr><th>Symbol</th><th>Meaning</th></tr>
+  </thead>
+  <tbody>
+    <tr><td><code>x, y, z</code></td><td>Spatial coordinates on a torus of size <code>(L, M, N)</code></td></tr>
+    <tr><td><code>l</code></td><td>Internal layer / sublattice index</td></tr>
+    <tr><td><code>L, M, N</code></td><td>Lattice extents; provided via a size holder <code>S</code> with <code>S.x=L, S.y=M, S.z=N</code></td></tr>
+  </tbody>
+</table>
+
+<p>
+A site has a unique linear ID computed by <code>coord::hash</code>:
+</p>
+
+<pre><code>id = l·L·M·N  +  z·L·M  +  y·L  +  x
+</code></pre>
+
+<p>
+The inverse mapping (flattened ID → coordinates) is implemented by
+<code>coord::coord(const int&amp; c, const coord&amp; S)</code>, which unpacks with modular arithmetic:
+</p>
+
+<pre><code>x =  c % (M·L·N) % (M·L) % L
+y =  c % (M·L·N) % (M·L) / L
+z =  c % (M·L·N) / (M·L)
+l =  c / (M·L·N)
+</code></pre>
+
+<p>
+Dual-lattice face qubits are addressed by functions <code>getFaceQubits(...)</code>.
+They select neighboring hashed coordinates on the appropriate face (xy / zx / zy),
+with parity rules on <code>x, y, z</code> and wrap-around via <code>divmod</code>.
+The compact overload <code>getFaceQubits(S, k)</code> maps a face label
+<code>k ∈ {0,3,4,6,7,8,9,10,11}</code> to the corresponding neighbor’s linear ID.
+</p>
+
+<p>
+For 2D substructures, <code>subcoord</code> uses <code>(x, y, l)</code> with sizes
+<code>(L, M)</code> and analogous hash/unhash:
+</p>
+
+<pre><code>sub-id = l·L·M  +  y·L  +  x
+x = c % (M·L) % L
+y = c % (M·L) / L
+l = c / (M·L)
+</code></pre>
+
+<p>
+Example usage:
+</p>
+
+<pre><code>// Sizes: L=4, M=3, N=2
+coord S(4, 3, 2, 0);          // size holder (l not used)
+coord q(2, 1, 0, 1);          // a site
+int id = q.hash(S);           // flatten → unique integer
+coord r(id, S);               // unflatten → (x,y,z,l) == (2,1,0,1)
+</code></pre>
